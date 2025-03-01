@@ -23,8 +23,7 @@
             border-radius: 12px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
             max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: auto;
             border: 3px solid #2d87f0;
         }
         .zona-palabras, .zona-drop {
@@ -33,9 +32,6 @@
             flex-wrap: wrap;
             margin-top: 10px;
             padding: 10px;
-        }
-        .zona-palabras {
-            border-bottom: 2px dashed #bbb;
         }
         .zona-drop {
             min-height: 100px;
@@ -118,9 +114,9 @@
         let puntos = 0;
         let frasesYaPuntuadas = new Set();
 
-        // Pedir el nombre del jugador si no está guardado
+        // Pedir el nombre del jugador correctamente
         let jugador = localStorage.getItem("jugador");
-        if (!jugador) {
+        if (!jugador || jugador === "null") {
             jugador = prompt("¿Cuál es tu nombre?");
             if (!jugador) jugador = "Jugador";
             localStorage.setItem("jugador", jugador);
@@ -191,11 +187,9 @@
                     palabraElem.classList.add("palabra");
                     palabraElem.textContent = palabra;
                     palabraElem.draggable = true;
-
                     palabraElem.addEventListener("dragstart", (e) => {
                         e.dataTransfer.setData("text", palabra);
                     });
-
                     zonaPalabras.appendChild(palabraElem);
                 });
             });
@@ -203,6 +197,15 @@
 
         function allowDrop(event) {
             event.preventDefault();
+        }
+
+        function drop(event, index) {
+            event.preventDefault();
+            let texto = event.dataTransfer.getData("text");
+            let palabraMovida = [...document.querySelectorAll(".palabra")].find(p => p.textContent === texto);
+            if (palabraMovida) {
+                document.getElementById(`zona-drop-${index}`).appendChild(palabraMovida);
+            }
         }
 
         function nuevaRonda() {
@@ -216,4 +219,5 @@
 
 </body>
 </html>
+
 
