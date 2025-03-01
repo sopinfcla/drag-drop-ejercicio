@@ -180,7 +180,8 @@
                     
                     if (palabraMovida) {
                         palabraMovida.classList.add("palabra-en-drop");
-                        zonaDrop.appendChild(palabraMovida);
+                        let dropZone = e.target.closest(".zona-drop");
+                        dropZone.insertBefore(palabraMovida, getNearestElement(dropZone, e.clientX));
                     }
                 });
 
@@ -189,7 +190,6 @@
                 zonaPalabras.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
-                    let originalParent = document.getElementById(e.dataTransfer.getData("originalParent"));
                     let palabraMovida = [...zonaDrop.children].find(p => p.textContent === texto);
 
                     if (palabraMovida) {
@@ -198,6 +198,15 @@
                     }
                 });
             });
+        }
+
+        function getNearestElement(container, x) {
+            let children = [...container.children];
+            return children.reduce((closest, child) => {
+                let box = child.getBoundingClientRect();
+                let offset = x - box.left - box.width / 2;
+                return offset < 0 && offset > closest.offset ? { offset, element: child } : closest;
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
         function verificarTodas() {
