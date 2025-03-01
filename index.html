@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordenar palabras</title>
+    <title>Ordena las palabras correctamente</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
         }
-        #contenedor-palabras {
+        .contenedor {
             display: flex;
             justify-content: center;
-            gap: 10px;
             margin-top: 20px;
         }
         .palabra {
             padding: 10px;
+            margin: 5px;
             background-color: lightgray;
             border: 1px solid #000;
             cursor: grab;
+            display: inline-block;
         }
         .zona-drop {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            border: 2px dashed gray;
-            padding: 20px;
             min-height: 50px;
-            margin-top: 20px;
+            width: 80%;
+            margin: auto;
+            border: 2px dashed #000;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         .correcto {
             background-color: lightgreen;
@@ -42,31 +44,24 @@
 
     <h2>Ordena las palabras correctamente</h2>
 
-    <div id="contenedor-palabras"></div>
-
-    <div class="zona-drop" id="zona-drop">
-        <!-- Aquí se arrastrarán las palabras -->
-    </div>
+    <div id="zona-palabras" class="contenedor"></div>
+    <div id="zona-drop" class="zona-drop"></div>
 
     <button onclick="verificarOrden()">Verificar</button>
-    <button onclick="reiniciarEjercicio()">Reiniciar</button>
+    <button onclick="reiniciar()">Reiniciar</button>
 
     <script>
         let frases = [];
-        let fraseActual = {};
+        let ordenCorrecto = [];
+        const urlJson = "https://sopinficla.github.io/drag-drop-ejercicio/frases.json"; // URL del JSON en GitHub
 
         async function cargarFrases() {
-            const url = "https://claretsegovia-my.sharepoint.com/personal/arodrigo_claretsegoviao365_educamos_com/_layouts/15/download.aspx?SourceUrl=https://claretsegovia-my.sharepoint.com/personal/arodrigo_claretsegoviao365_educamos_com/Documents/frases.json";
-
             try {
-                let response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                let response = await fetch(urlJson);
+                if (!response.ok) throw new Error(`Error al cargar: ${response.status}`);
 
-                let text = await response.text();
-                if (text.includes("<!DOCTYPE html>")) throw new Error("OneDrive está devolviendo HTML en vez de JSON.");
-
-                let data = JSON.parse(text);
-                frases = data.frases;
+                let data = await response.json();
+                frases = data.frases; 
                 iniciarEjercicio();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
@@ -74,72 +69,65 @@
         }
 
         function iniciarEjercicio() {
-            if (frases.length === 0) return;
+            const zonaPalabras = document.getElementById("zona-palabras");
+            const zonaDrop = document.getElementById("zona-drop");
 
-            // Seleccionar una frase al azar
-            fraseActual = frases[Math.floor(Math.random() * frases.length)];
+            zonaPalabras.innerHTML = "";
+            zonaDrop.innerHTML = "";
 
-            // Mostrar palabras en orden aleatorio
-            let palabrasDesordenadas = [...fraseActual.palabras].sort(() => Math.random() - 0.5);
+            // Selecciona una frase aleatoria
+            let fraseSeleccionada = frases[Math.floor(Math.random() * frases.length)];
+            let palabrasDesordenadas = [...fraseSeleccionada.palabras].sort(() => Math.random() - 0.5);
+            ordenCorrecto = fraseSeleccionada.orden_correcto;
 
-            const contenedor = document.getElementById("contenedor-palabras");
-            contenedor.innerHTML = "";
-            palabrasDesordenadas.forEach(palabra => {
+            // Crea palabras arrastrables
+            palabrasDesordenadas.forEach((palabra) => {
                 let span = document.createElement("span");
-                span.textContent = palabra;
                 span.classList.add("palabra");
+                span.textContent = palabra;
                 span.draggable = true;
-                span.ondragstart = arrastrar;
-                contenedor.appendChild(span);
+
+                span.addEventListener("dragstart", (e) => {
+                    e.dataTransfer.setData("text", e.target.textContent);
+                });
+
+                zonaPalabras.appendChild(span);
             });
 
-            document.getElementById("zona-drop").innerHTML = "";
-        }
+            // Zona de drop
+            zonaDrop.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
 
-        function arrastrar(event) {
-            event.dataTransfer.setData("text", event.target.textContent);
-        }
-
-        function permitirSoltar(event) {
-            event.preventDefault();
-        }
-
-        function soltar(event) {
-            event.preventDefault();
-            let palabra = event.dataTransfer.getData("text");
-            let span = document.createElement("span");
-            span.textContent = palabra;
-            span.classList.add("palabra");
-            event.target.appendChild(span);
+            zonaDrop.addEventListener("drop", (e) => {
+                e.preventDefault();
+                let texto = e.dataTransfer.getData("text");
+                let span = document.createElement("span");
+                span.classList.add("palabra");
+                span.textContent = texto;
+                zonaDrop.appendChild(span);
+            });
         }
 
         function verificarOrden() {
-            let zonaDrop = document.getElementById("zona-drop").children;
-            let palabrasUsuario = Array.from(zonaDrop).map(span => span.textContent);
-
-            if (JSON.stringify(palabrasUsuario) === JSON.stringify(fraseActual.orden_correcto)) {
+            const palabrasEnZona = Array.from(document.getElementById("zona-drop").children).map(el => el.textContent);
+            
+            if (JSON.stringify(palabrasEnZona) === JSON.stringify(ordenCorrecto)) {
                 document.getElementById("zona-drop").classList.add("correcto");
-                alert("¡Correcto!");
+                document.getElementById("zona-drop").classList.remove("incorrecto");
             } else {
                 document.getElementById("zona-drop").classList.add("incorrecto");
-                alert("Intenta de nuevo.");
+                document.getElementById("zona-drop").classList.remove("correcto");
             }
         }
 
-        function reiniciarEjercicio() {
+        function reiniciar() {
             document.getElementById("zona-drop").classList.remove("correcto", "incorrecto");
             iniciarEjercicio();
         }
 
-        // Evento para permitir soltar elementos en la zona de drop
-        document.getElementById("zona-drop").ondragover = permitirSoltar;
-        document.getElementById("zona-drop").ondrop = soltar;
-
-        // Cargar frases al iniciar
         cargarFrases();
     </script>
 
 </body>
 </html>
-
-
