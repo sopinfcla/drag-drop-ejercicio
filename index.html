@@ -22,23 +22,29 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 700px;
+            max-width: 800px; /* Más ancho para evitar salto de línea */
             margin-left: auto;
             margin-right: auto;
             border: 3px solid #2d87f0;
         }
+        .zona-palabras, .zona-drop {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+        }
+        .zona-palabras {
+            border-bottom: 2px dashed #bbb;
+        }
         .zona-drop {
-            min-height: 50px;
-            width: 95%;
+            min-height: 80px;
+            width: 100%;
             background-color: white;
             border-radius: 12px;
             border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
             background-size: 25px 25px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            padding: 10px;
         }
         .palabra {
             padding: 12px 18px;
@@ -52,20 +58,6 @@
             user-select: none;
             transition: transform 0.2s ease-in-out, background 0.3s;
             opacity: 0.9;
-        }
-        .palabra-en-drop {
-            background-color: rgba(41, 128, 185, 0.9) !important;
-        }
-        .correcto {
-            background-color: #b3ffb3 !important;
-            border: 3px solid #009900 !important;
-        }
-        .incorrecto {
-            background-color: #ffb3b3 !important;
-            border: 3px solid #cc0000 !important;
-        }
-        .bloqueado {
-            pointer-events: none;
         }
         .botones {
             margin-top: 20px;
@@ -102,7 +94,7 @@
     <h2>Ordena todas las frases correctamente</h2>
     
     <div class="puntuacion">Puntos: <span id="puntos">0</span></div>
-    <div class="puntuacion">Nivel: <span id="nivel">Principiante</span></div>
+    <div class="puntuacion">Jugador: <span id="jugador"></span></div>
     <div class="estrellas" id="estrellas">⭐</div>
 
     <div id="frases-container"></div>
@@ -113,59 +105,61 @@
     </div>
 
     <script>
-        let frasesDisponibles = [];
-        let frasesSeleccionadas = [];
-        let frasesYaUsadas = new Set();
+        let frases = [];
+        let frasesMotivadoras = [];
+        let frasesUsadas = new Set();
         let puntos = 0;
-        let frasesYaPuntuadas = new Set();
+
+        // Pedir el nombre del jugador al inicio y guardarlo
+        let jugador = localStorage.getItem("jugador") || prompt("¿Cuál es tu nombre?");
+        localStorage.setItem("jugador", jugador);
+        document.getElementById("jugador").textContent = jugador;
+
+        const urlFrases = "frases.json"; 
+        const urlMotivadoras = "frases_motivadoras.json"; 
 
         async function cargarFrases() {
             try {
-                let response = await fetch("frases.json");
-                if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
-
+                let response = await fetch(urlFrases);
                 let data = await response.json();
-                if (!data.frases || data.frases.length === 0) {
-                    throw new Error("El JSON no contiene frases válidas.");
-                }
+                if (!data.frases || data.frases.length === 0) throw new Error("El JSON no contiene frases válidas.");
 
-                frasesDisponibles = data.frases;
-                nuevaRonda();
+                let frasesDisponibles = data.frases.filter(f => !frasesUsadas.has(JSON.stringify(f.orden_correcto)));
+                frases = frasesDisponibles.length > 5 ? seleccionarCincoAleatorias(frasesDisponibles) : frasesDisponibles;
+
+                frases.forEach(f => frasesUsadas.add(JSON.stringify(f.orden_correcto))); // Marcar como usada
+                mostrarFrases();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
             }
         }
 
-        function seleccionarCincoAleatorias() {
-            let frasesFiltradas = frasesDisponibles.filter(f => !frasesYaUsadas.has(f.frase));
-            if (frasesFiltradas.length < 5) {
-                frasesYaUsadas.clear();
-                frasesFiltradas = frasesDisponibles;
+        async function cargarFrasesMotivadoras() {
+            try {
+                let response = await fetch(urlMotivadoras);
+                let data = await response.json();
+                if (!data.frases || data.frases.length === 0) throw new Error("No se encontraron frases motivadoras.");
+                
+                frasesMotivadoras = data.frases;
+            } catch (error) {
+                console.error("Error al cargar frases motivadoras:", error);
             }
-
-            let seleccionadas = frasesFiltradas.sort(() => 0.5 - Math.random()).slice(0, 5);
-            seleccionadas.forEach(f => frasesYaUsadas.add(f.frase));
-            return seleccionadas;
         }
 
-        function crearPalabra(texto) {
-            let span = document.createElement("span");
-            span.classList.add("palabra");
-            span.textContent = texto;
-            span.draggable = true;
+        function seleccionarCincoAleatorias(lista) {
+            return lista.sort(() => 0.5 - Math.random()).slice(0, 5);
+        }
 
-            span.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text", texto);
-            });
-
-            return span;
+        function obtenerFraseMotivadora() {
+            if (!frasesMotivadoras.length) return "¡Sigue adelante, estás mejorando!";
+            return frasesMotivadoras[Math.floor(Math.random() * frasesMotivadoras.length)].replace("[nombre]", jugador);
         }
 
         function mostrarFrases() {
             const frasesContainer = document.getElementById("frases-container");
             frasesContainer.innerHTML = "";
 
-            frasesSeleccionadas.forEach((frase, index) => {
+            frases.forEach((frase, index) => {
                 let contenedorFrase = document.createElement("div");
                 contenedorFrase.classList.add("frase-container");
 
@@ -182,66 +176,45 @@
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
                 palabrasDesordenadas.forEach((palabra) => {
-                    let palabraElem = crearPalabra(palabra);
+                    let palabraElem = document.createElement("span");
+                    palabraElem.classList.add("palabra");
+                    palabraElem.textContent = palabra;
+                    palabraElem.draggable = true;
+
+                    palabraElem.addEventListener("dragstart", (e) => {
+                        e.dataTransfer.setData("text", palabra);
+                    });
+
                     zonaPalabras.appendChild(palabraElem);
-                });
-
-                zonaDrop.addEventListener("dragover", (e) => e.preventDefault());
-
-                zonaDrop.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...document.querySelectorAll(".palabra")].find(p => p.textContent.trim() === texto.trim());
-
-                    if (palabraMovida) {
-                        palabraMovida.classList.add("palabra-en-drop");
-                        zonaDrop.appendChild(palabraMovida);
-                    }
                 });
             });
         }
 
         function verificarTodas() {
-            let aciertos = 0;
-            frasesSeleccionadas.forEach((frase, index) => {
+            frases.forEach((frase, index) => {
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
-                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent.trim());
+                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
 
                 if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
-                    if (!frasesYaPuntuadas.has(index)) {
-                        zonaDrop.classList.add("correcto");
-                        frasesYaPuntuadas.add(index);
-                        aciertos++;
-                    }
-                    zonaDrop.classList.add("bloqueado");
+                    zonaDrop.classList.add("correcto");
+                    puntos++;
                 } else {
-                    zonaDrop.classList.remove("correcto");
                     zonaDrop.classList.add("incorrecto");
                 }
             });
 
-            puntos += aciertos;
             document.getElementById("puntos").textContent = puntos;
-            actualizarNivel();
-        }
-
-        function actualizarNivel() {
-            let nivel = "Principiante";
-            let estrellas = "⭐";
-            if (puntos >= 10) { nivel = "Avanzado"; estrellas = "⭐⭐⭐"; }
-            if (puntos >= 20) { nivel = "Experto"; estrellas = "⭐⭐⭐⭐⭐"; }
-
-            document.getElementById("nivel").textContent = nivel;
-            document.getElementById("estrellas").textContent = estrellas;
         }
 
         function nuevaRonda() {
-            frasesSeleccionadas = seleccionarCincoAleatorias();
-            mostrarFrases();
+            alert(obtenerFraseMotivadora());
+            cargarFrases();
         }
 
         cargarFrases();
+        cargarFrasesMotivadoras();
     </script>
 
 </body>
 </html>
+
