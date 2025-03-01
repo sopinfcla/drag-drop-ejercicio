@@ -10,41 +10,82 @@
             text-align: center;
             background-color: #f2f7ff;
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         h2 {
             color: #2d87f0;
             font-size: 28px;
             font-weight: bold;
+            margin-bottom: 30px;
         }
         .puntuacion {
             font-size: 22px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .estrellas {
+            display: flex;
+            margin: 0 15px;
+        }
+        .estrella {
+            width: 30px;
+            height: 30px;
+            margin: 0 3px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ddd"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+            background-repeat: no-repeat;
+            transition: all 0.3s ease;
+        }
+        .estrella.activa {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FFD700"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+            transform: scale(1.2);
         }
         .motivacion {
             font-size: 18px;
             font-style: italic;
             color: #555;
-            margin: 10px 0;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e6f2ff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .motivacion-emoji {
+            font-size: 24px;
+            margin-right: 10px;
         }
         .zona-drop {
             min-height: 80px;
-            width: 90%;
-            padding: 10px;
+            width: 100%;
+            padding: 15px;
             margin: 0 auto 20px auto;
             background-color: white;
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
             border-radius: 12px;
             border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), 
-                              linear-gradient(to right, transparent 24px, #ddd 25px);
+                             linear-gradient(to right, transparent 24px, #ddd 25px);
             background-size: 25px 25px;
+            transition: all 0.3s ease;
+        }
+        .zona-drop.correcta {
+            border: 2px solid #4CAF50;
+            background-image: none;
+            background-color: rgba(76, 175, 80, 0.1);
+            pointer-events: none; /* Bloquear interacción cuando es correcta */
         }
         .palabra {
             display: inline-block;
-            padding: 8px 12px;
+            padding: 10px 15px;
             margin: 5px;
             background-color: #2d87f0;
             color: white;
@@ -53,10 +94,11 @@
             user-select: none;
             font-weight: bold;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .palabra:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         .palabra.arrastrando {
             opacity: 0.5;
@@ -67,43 +109,33 @@
         .palabra.incorrecta {
             background-color: #f44336;
         }
-        /* Colores para las palabras en la zona de destino */
-        .palabra-colocada-1 {
-            background-color: #FF5722; /* Naranja */
-        }
-        .palabra-colocada-2 {
-            background-color: #9C27B0; /* Púrpura */
-        }
-        .palabra-colocada-3 {
-            background-color: #3F51B5; /* Índigo */
-        }
-        .palabra-colocada-4 {
-            background-color: #009688; /* Verde azulado */
-        }
-        .palabra-colocada-5 {
-            background-color: #FF9800; /* Ámbar */
-        }
-        .palabra-colocada-6 {
-            background-color: #795548; /* Marrón */
-        }
-        .palabra-colocada-7 {
-            background-color: #607D8B; /* Azul grisáceo */
-        }
-        .palabra-colocada-8 {
-            background-color: #E91E63; /* Rosa */
+        /* Colores para las palabras colocadas en la zona drop */
+        .palabra-colocada {
+            background-color: #FF9800;
         }
         .frases-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
         .frase {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             width: 100%;
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
+        .frase.completada {
+            animation: frase-completada 1s ease;
+        }
+        @keyframes frase-completada {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         .palabras-desordenadas {
             min-height: 60px;
-            padding: 10px;
+            padding: 15px;
             background-color: rgba(45, 135, 240, 0.1);
             border-radius: 12px;
             margin-top: 10px;
@@ -111,24 +143,52 @@
             flex-wrap: wrap;
             justify-content: center;
         }
+        .botones-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             margin: 10px;
             background-color: #2d87f0;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
         }
         button:hover {
             background-color: #1a76d2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button .icono {
+            margin-right: 8px;
+            font-size: 20px;
         }
         .instruccion {
-            color: #555;
+            color: #444;
             font-style: italic;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .instruccion:before {
+            content: "📝";
+            margin-right: 8px;
+            font-size: 20px;
         }
         .resultado {
             font-size: 18px;
@@ -137,6 +197,11 @@
             padding: 10px;
             border-radius: 10px;
             display: none;
+            animation: aparecer 0.5s ease;
+        }
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .correcto {
             background-color: rgba(76, 175, 80, 0.2);
@@ -147,56 +212,78 @@
             color: #c62828;
         }
         .inicio {
-            max-width: 400px;
-            margin: 30px auto;
-            padding: 20px;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
             background-color: white;
             border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: aparecer-inicio 1s ease;
+        }
+        @keyframes aparecer-inicio {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         input[type="text"] {
-            padding: 10px 15px;
+            padding: 12px 20px;
             border: 2px solid #ddd;
-            border-radius: 20px;
+            border-radius: 30px;
             font-size: 16px;
             outline: none;
-            width: 200px;
-            margin-right: 10px;
+            width: 80%;
+            margin: 15px auto;
+            transition: all 0.3s ease;
         }
         input[type="text"]:focus {
             border-color: #2d87f0;
+            box-shadow: 0 0 8px rgba(45, 135, 240, 0.3);
         }
         .nivel {
-            margin-top: 10px;
+            margin-top: 20px;
             display: none;
         }
         .nivel-label {
             margin-right: 10px;
             font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .nivel-btns {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
         }
         .nivel-btn {
-            padding: 8px 15px;
-            margin: 0 5px;
+            padding: 10px 20px;
+            margin: 0 8px;
             background-color: #e0e0e0;
             color: #333;
             border: none;
-            border-radius: 15px;
+            border-radius: 20px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         .nivel-btn.seleccionado {
             background-color: #2d87f0;
             color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(45, 135, 240, 0.3);
         }
         .nivel-descripcion {
-            margin-top: 5px;
+            margin-top: 10px;
             font-size: 14px;
             color: #666;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: left;
         }
         .progreso {
             width: 100%;
             height: 10px;
             background-color: #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
             margin: 10px 0;
             overflow: hidden;
         }
@@ -206,35 +293,91 @@
             width: 0%;
             transition: width 0.5s ease;
         }
+        .nombre-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .nombre-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #555;
+        }
+        /* Estilo para niveles alcanzados */
+        .nivel-alcanzado {
+            font-size: 16px;
+            color: #2d87f0;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .puntuacion {
+                flex-direction: column;
+            }
+            .estrellas {
+                margin: 10px 0;
+            }
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            .palabra {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <h2>Ordena todas las frases correctamente</h2>
     <div class="inicio" id="pantalla-inicio">
-        <div>
-            <label for="nombre">Tu Nombre:</label>
+        <div class="nombre-container">
+            <span class="nombre-label">Tu Nombre:</span>
             <input type="text" id="nombre" placeholder="Escribe tu nombre">
         </div>
         <div class="nivel">
-            <span class="nivel-label">Nivel:</span>
-            <button class="nivel-btn seleccionado" data-nivel="facil">Fácil</button>
-            <button class="nivel-btn" data-nivel=
-        <button onclick="iniciarJuego()">¡Comenzar!</button>
+            <span class="nivel-label">Elige tu nivel:</span>
+            <div class="nivel-btns">
+                <button class="nivel-btn seleccionado" data-nivel="facil">Fácil</button>
+                <button class="nivel-btn" data-nivel="medio">Medio</button>
+                <button class="nivel-btn" data-nivel="dificil">Difícil</button>
+            </div>
+            <div class="nivel-descripcion">
+                <strong>Fácil:</strong> Frases cortas y simples con 4-5 palabras<br>
+                <strong>Medio:</strong> Frases de longitud media con 6-7 palabras<br>
+                <strong>Difícil:</strong> Frases largas y complejas con 8-10 palabras
+            </div>
+        </div>
+        <button onclick="iniciarJuego()"><span class="icono">🎮</span> ¡Comenzar!</button>
     </div>
 
     <div class="puntuacion" style="display: none;">
-        <div class="progreso">
-            <div class="barra-progreso" id="barra-progreso"></div>
+        <div>
+            Puntos: <span id="puntos">0</span> / <span id="total-frases">0</span>
         </div>
-        Puntos: <span id="puntos">0</span> / <span id="total-frases">0</span>
-        <div id="motivacion" class="motivacion"></div>
+        <div class="estrellas" id="estrellas">
+            <div class="estrella" id="estrella-1"></div>
+            <div class="estrella" id="estrella-2"></div>
+            <div class="estrella" id="estrella-3"></div>
+            <div class="estrella" id="estrella-4"></div>
+            <div class="estrella" id="estrella-5"></div>
+        </div>
+        <div class="nivel-alcanzado" id="nivel-alcanzado">
+            Nivel: Principiante
+        </div>
+    </div>
+    
+    <div class="motivacion" id="motivacion" style="display: none;">
+        <span class="motivacion-emoji">🎮</span>
+        <span id="texto-motivacion">¡Vamos a jugar!</span>
     </div>
 
     <div id="frases-container" class="frases-container" style="display: none;"></div>
     
-    <div style="display: none;">
-        <button onclick="verificarTodas()">✅ Verificar todas</button>
-        <button onclick="nuevaRonda()">🔄 Nueva Ronda</button>
+    <div class="botones-container" style="display: none;" id="botones-container">
+        <button onclick="verificarTodas()"><span class="icono">✅</span> Verificar todas</button>
+        <button onclick="nuevaRonda()"><span class="icono">🔄</span> Nueva Ronda</button>
     </div>
 
     <script>
@@ -243,15 +386,46 @@
         let frasesMotivadoras = [];
         let jugador = "";
         let puntuacion = 0;
-        let tiempoRestante = 60;
-        let temporizador;
+        let puntuacionTotal = 0;
         let nivelActual = "facil";
-        let totalFrasesNivel = {
-            "facil": 3,
-            "medio": 5,
-            "dificil": 7
+        let frasesCompletadas = new Set(); // Para rastrear frases ya completadas correctamente
+        let frasesBloqueadas = new Set(); // Para rastrear frases ya verificadas en la ronda actual
+        let totalRondas = 0;
+        
+        // Configuración por nivel
+        const nivelesConfig = {
+            "facil": {
+                minPalabras: 4,
+                maxPalabras: 5,
+                totalFrases: 5,
+                puntosParaEstrella: 5 // Puntos necesarios para cada estrella
+            },
+            "medio": {
+                minPalabras: 6,
+                maxPalabras: 7,
+                totalFrases: 5,
+                puntosParaEstrella: 10
+            },
+            "dificil": {
+                minPalabras: 8,
+                maxPalabras: 10,
+                totalFrases: 5,
+                puntosParaEstrella: 15
+            }
         };
 
+        // Niveles alcanzados basados en estrellas
+        const nivelesAlcanzados = [
+            "Principiante", // 0-1 estrellas
+            "Aprendiz",     // 2 estrellas
+            "Aventajado",   // 3 estrellas
+            "Experto",      // 4 estrellas
+            "Maestro"       // 5 estrellas
+        ];
+
+        // Emojis para frases motivadoras
+        const emojisMotivadores = ["🎮", "🏆", "🌟", "🚀", "🎯", "🔥", "💪", "🎉", "🌈", "🦄"];
+        
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             // Mostrar los botones de nivel al cargar la página
@@ -269,7 +443,7 @@
                 });
             });
         });
-
+        
         // Función para iniciar el juego
         function iniciarJuego() {
             jugador = document.getElementById("nombre").value.trim();
@@ -279,16 +453,20 @@
             document.getElementById("pantalla-inicio").style.display = "none";
             
             // Mostrar elementos del juego
-            document.querySelector(".puntuacion").style.display = "block";
+            document.querySelector(".puntuacion").style.display = "flex";
+            document.getElementById("motivacion").style.display = "flex";
             document.getElementById("frases-container").style.display = "block";
-            document.querySelector("div[style='display: none;']").style.display = "block";
+            document.getElementById("botones-container").style.display = "flex";
+            
+            // Mostrar total de frases
+            document.getElementById("total-frases").textContent = nivelesConfig[nivelActual].totalFrases;
             
             // Cargar datos necesarios
             cargarFrasesMotivadoras();
             cargarFrases();
             
-            // Iniciar temporizador
-            iniciarTemporizador();
+            // Actualizar estrellas
+            actualizarEstrellas();
         }
         
         // Función para cargar frases motivadoras
@@ -305,7 +483,12 @@
                     "¡Tu cerebro brilla como la estrella de la Bella y la Bestia! 🌟📖",
                     "¡Buzz Lightyear te dice: 'Al infinito y más allá'! 🚀",
                     "¡Sigue así! Olaf te da un abrazo calentito. ⛄💙",
-                    "¡Harry Potter te anima a seguir aprendiendo! 📖🧙‍♂️"
+                    "¡Harry Potter te anima a seguir aprendiendo! 📖🧙‍♂️",
+                    "¡Super Mario dice que estás alcanzando la bandera! 🏁🍄",
+                    "¡Como dice Dory, sigue nadando, sigue nadando! 🐠💦",
+                    "¡Iron Man está impresionado con tu inteligencia! 🦾⚡",
+                    "¡La Princesa Leia dice que la fuerza está contigo! ✨⭐",
+                    "¡Sonic piensa que eres súper rápido ordenando frases! 🦔💨"
                 ];
                 
                 mostrarFraseMotivadora();
@@ -328,7 +511,10 @@
             // Reemplazar {jugador} con el nombre del jugador
             frase = frase.replace("{jugador}", jugador);
             
-            document.getElementById("motivacion").textContent = frase;
+            // Actualizar texto y emoji
+            document.getElementById("texto-motivacion").textContent = frase;
+            const emoji = emojisMotivadores[Math.floor(Math.random() * emojisMotivadores.length)];
+            document.querySelector(".motivacion-emoji").textContent = emoji;
         }
         
         // Función para cargar las frases a ordenar
@@ -375,6 +561,26 @@
                     {
                         "palabras": ["Los", "unicornios", "son", "mágicos", "y", "tienen", "un", "cuerno"],
                         "orden_correcto": ["Los", "unicornios", "son", "mágicos", "y", "tienen", "un", "cuerno"]
+                    },
+                    {
+                        "palabras": ["Mickey", "Mouse", "lleva", "pantalones", "rojos"],
+                        "orden_correcto": ["Mickey", "Mouse", "lleva", "pantalones", "rojos"]
+                    },
+                    {
+                        "palabras": ["En", "primavera", "las", "flores", "crecen", "y", "los", "pájaros", "cantan"],
+                        "orden_correcto": ["En", "primavera", "las", "flores", "crecen", "y", "los", "pájaros", "cantan"]
+                    },
+                    {
+                        "palabras": ["El", "acueducto", "de", "Segovia", "es", "muy", "antiguo"],
+                        "orden_correcto": ["El", "acueducto", "de", "Segovia", "es", "muy", "antiguo"]
+                    },
+                    {
+                        "palabras": ["En", "verano", "vamos", "a", "la", "playa", "y", "nadamos", "en", "el", "mar"],
+                        "orden_correcto": ["En", "verano", "vamos", "a", "la", "playa", "y", "nadamos", "en", "el", "mar"]
+                    },
+                    {
+                        "palabras": ["El", "otoño", "tiene", "hojas", "de", "colores", "y", "viento", "fresco"],
+                        "orden_correcto": ["El", "otoño", "tiene", "hojas", "de", "colores", "y", "viento", "fresco"]
                     }
                 ];
                 
@@ -386,19 +592,48 @@
             }
         }
         
+        // Función para filtrar frases según nivel de dificultad
+        function filtrarFrasesPorNivel(frases, nivel) {
+            const config = nivelesConfig[nivel];
+            return frases.filter(frase => {
+                const numPalabras = frase.palabras.length;
+                return numPalabras >= config.minPalabras && numPalabras <= config.maxPalabras;
+            });
+        }
+        
         // Función para generar las frases en el DOM
         function generarFrases() {
             const contenedor = document.getElementById("frases-container");
             contenedor.innerHTML = "";
             
-            // Seleccionamos un número de frases según el nivel
-            const frasesAleatorias = obtenerFrasesAleatorias(frases, totalFrasesNivel[nivelActual]);
+            // Reiniciar frases bloqueadas para la nueva ronda
+            frasesBloqueadas = new Set();
+            
+            // Filtrar frases según nivel y seleccionar cantidad necesaria
+            const frasesFiltradas = filtrarFrasesPorNivel(frases, nivelActual);
+            // Excluir frases ya completadas si es posible
+            const frasesDisponibles = frasesFiltradas.filter((_, index) => !frasesCompletadas.has(index));
+            
+            // Si no hay suficientes frases disponibles, resetear las completadas
+            if (frasesDisponibles.length < nivelesConfig[nivelActual].totalFrases) {
+                frasesCompletadas.clear();
+            }
+            
+            // Seleccionar frases aleatorias
+            const frasesAleatorias = obtenerFrasesAleatorias(
+                frasesDisponibles.length > 0 ? frasesDisponibles : frasesFiltradas, 
+                nivelesConfig[nivelActual].totalFrases
+            );
+            
+            // Incrementar contador de rondas
+            totalRondas++;
             
             // Para cada frase, creamos su contenedor y elementos
             frasesAleatorias.forEach((frase, index) => {
                 const fraseDiv = document.createElement("div");
                 fraseDiv.className = "frase";
                 fraseDiv.id = `frase-${index}`;
+                fraseDiv.dataset.fraseIndice = index; // Guardar índice de la frase
                 fraseDiv.innerHTML = `
                     <div class="instruccion">Ordena esta frase:</div>
                     <div class="zona-drop" id="zona-drop-${index}" data-index="${index}"></div>
@@ -433,57 +668,9 @@
                 zonaDestino.addEventListener("drop", drop);
                 zonaDestino.addEventListener("click", clickZonaDestino);
             });
-        }
-        
-        // Función para iniciar el temporizador
-        function iniciarTemporizador() {
-            tiempoRestante = 60; // 60 segundos (1 minuto)
-            actualizarTiempoEnPantalla();
             
-            temporizador = setInterval(() => {
-                tiempoRestante--;
-                actualizarTiempoEnPantalla();
-                
-                if (tiempoRestante <= 0) {
-                    clearInterval(temporizador);
-                    finalizarJuego();
-                }
-            }, 1000);
-        }
-        
-        // Función para actualizar el tiempo en pantalla
-        function actualizarTiempoEnPantalla() {
-            document.getElementById("tiempo").textContent = tiempoRestante;
-        }
-        
-        // Función para finalizar el juego
-        function finalizarJuego() {
-            // Detener el temporizador si está activo
-            if (temporizador) {
-                clearInterval(temporizador);
-            }
-            
-            // Verificar todas las frases automáticamente
-            verificarTodas();
-            
-            // Mostrar mensaje final según puntuación
-            let mensaje = "";
-            if (puntuacion >= totalFrasesNivel[nivelActual]) {
-                mensaje = `¡Felicidades ${jugador}! Has completado todas las frases correctamente. ¡Eres genial!`;
-            } else if (puntuacion > 0) {
-                mensaje = `¡Buen intento ${jugador}! Has ordenado ${puntuacion} frases correctamente. ¡Sigue practicando!`;
-            } else {
-                mensaje = `¡Ánimo ${jugador}! No has podido ordenar las frases esta vez, pero puedes intentarlo de nuevo.`;
-            }
-            
-            // Mostrar mensaje en un alert
-            setTimeout(() => {
-                alert(mensaje);
-                // Preguntar si quiere jugar otra ronda
-                if (confirm("¿Quieres jugar otra ronda?")) {
-                    nuevaRonda();
-                }
-            }, 500);
+            // Mostrar nueva frase motivadora para la nueva ronda
+            mostrarFraseMotivadora();
         }
         
         // Función para obtener frases aleatorias del array
@@ -493,7 +680,7 @@
             return arrayCopia.slice(0, cantidad);
         }
         
-        // Función para mezclar un array
+        // Función para mezclar un array (algoritmo Fisher-Yates)
         function mezclarArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -508,7 +695,9 @@
             const zonaDropElement = document.getElementById(zonaDropId);
             const palabrasEnZona = Array.from(zonaDropElement.children).map(el => el.textContent);
             
-            const ordenCorrecto = frases[index].orden_correcto;
+            // Obtener el índice real de la frase en el array global
+            const fraseIndice = parseInt(document.getElementById(`frase-${index}`).dataset.fraseIndice);
+            const ordenCorrecto = frases[fraseIndice].orden_correcto;
             
             // Verificar si hay la misma cantidad de palabras
             if (palabrasEnZona.length !== ordenCorrecto.length) {
@@ -527,10 +716,15 @@
         
         // Función para verificar todas las frases
         function verificarTodas() {
-            puntuacion = 0;
+            let nuevaPuntuacion = puntuacion;
             
             // Para cada frase en el contenedor
-            for (let i = 0; i < totalFrasesNivel[nivelActual]; i++) {
+            for (let i = 0; i < nivelesConfig[nivelActual].totalFrases; i++) {
+                // Si la frase ya está bloqueada (ya verificada en esta ronda), saltarla
+                if (frasesBloqueadas.has(i)) {
+                    continue;
+                }
+                
                 const esCorrecta = verificarFrase(i);
                 const resultadoElement = document.getElementById(`resultado-${i}`);
                 resultadoElement.style.display = "block";
@@ -538,39 +732,95 @@
                 if (esCorrecta) {
                     resultadoElement.textContent = "¡Correcto!";
                     resultadoElement.className = "resultado correcto";
-                    puntuacion++;
                     
-                    // Marcar las palabras como correctas
+                    // Solo sumar punto si no estaba bloqueada previamente
+                    if (!frasesBloqueadas.has(i)) {
+                        nuevaPuntuacion++;
+                        puntuacionTotal++;
+                    }
+                    
+                    // Marcar la frase como completada y bloqueada
+                    const fraseIndice = parseInt(document.getElementById(`frase-${i}`).dataset.fraseIndice);
+                    frasesCompletadas.add(fraseIndice);
+                    frasesBloqueadas.add(i);
+                    
+                    // Marcar las palabras como correctas y bloquear la zona
                     const zonaDrop = document.getElementById(`zona-drop-${i}`);
+                    zonaDrop.classList.add("correcta");
                     Array.from(zonaDrop.children).forEach(palabra => {
                         palabra.classList.add("correcta");
                     });
+                    
+                    // Animar la frase completada
+                    document.getElementById(`frase-${i}`).classList.add("completada");
                 } else {
                     resultadoElement.textContent = "¡Incorrecto! Sigue intentando.";
                     resultadoElement.className = "resultado incorrecto";
                     
-                    // Marcar las palabras incorrectas
+                    // Marcar palabras incorrectas/correctas si hay alguna palabra colocada
                     const zonaDrop = document.getElementById(`zona-drop-${i}`);
-                    Array.from(zonaDrop.children).forEach((palabra, idx) => {
-                        if (palabra.textContent !== frases[i].orden_correcto[idx]) {
-                            palabra.classList.add("incorrecta");
-                        } else {
-                            palabra.classList.add("correcta");
-                        }
-                    });
+                    const fraseIndice = parseInt(document.getElementById(`frase-${i}`).dataset.fraseIndice);
+                    const ordenCorrecto = frases[fraseIndice].orden_correcto;
+                    
+                    if (zonaDrop.children.length > 0) {
+                        Array.from(zonaDrop.children).forEach((palabra, idx) => {
+                            if (idx < ordenCorrecto.length && palabra.textContent === ordenCorrecto[idx]) {
+                                palabra.classList.add("correcta");
+                            } else {
+                                palabra.classList.add("incorrecta");
+                            }
+                        });
+                    }
                 }
             }
             
-            // Actualizar puntuación
-            document.getElementById("puntos").textContent = puntuacion;
+            // Actualizar puntuación solo si ha cambiado
+            if (nuevaPuntuacion !== puntuacion) {
+                puntuacion = nuevaPuntuacion;
+                document.getElementById("puntos").textContent = puntuacion;
+                
+                // Actualizar estrellas
+                actualizarEstrellas();
+            }
             
-            // Mostrar nueva frase motivadora
-            mostrarFraseMotivadora();
+            // Comprobar si se han completado todas las frases
+            const todasCompletadas = Array.from({length: nivelesConfig[nivelActual].totalFrases}, (_, i) => i)
+                .every(i => frasesBloqueadas.has(i));
+                
+            if (todasCompletadas) {
+                setTimeout(() => {
+                    if (confirm(`¡Bien hecho, ${jugador}! Has completado todas las frases. ¿Quieres pasar a una nueva ronda?`)) {
+                        nuevaRonda();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Función para actualizar las estrellas según la puntuación
+        function actualizarEstrellas() {
+            const config = nivelesConfig[nivelActual];
+            
+            // Calcular cuántas estrellas debe tener activas
+            const estrellasActivas = Math.min(5, Math.floor(puntuacionTotal / config.puntosParaEstrella));
+            
+            // Actualizar las estrellas en la UI
+            for (let i = 1; i <= 5; i++) {
+                const estrella = document.getElementById(`estrella-${i}`);
+                if (i <= estrellasActivas) {
+                    estrella.classList.add("activa");
+                } else {
+                    estrella.classList.remove("activa");
+                }
+            }
+            
+            // Actualizar nivel alcanzado
+            const nivelActualUsuario = nivelesAlcanzados[Math.min(4, Math.floor(estrellasActivas / 2))];
+            document.getElementById("nivel-alcanzado").textContent = `Nivel: ${nivelActualUsuario}`;
         }
         
         // Función para iniciar una nueva ronda
         function nuevaRonda() {
-            // Reiniciar puntuación
+            // Reiniciar puntuación de la ronda
             puntuacion = 0;
             document.getElementById("puntos").textContent = puntuacion;
             
@@ -583,12 +833,6 @@
             // Generar nuevas frases
             generarFrases();
             
-            // Reiniciar temporizador
-            if (temporizador) {
-                clearInterval(temporizador);
-            }
-            iniciarTemporizador();
-            
             // Mostrar nueva frase motivadora
             mostrarFraseMotivadora();
         }
@@ -599,7 +843,8 @@
         function dragStart(e) {
             this.classList.add("arrastrando");
             palabraArrastrada = this;
-            e.dataTransfer.setData("text/plain", ""); // Necesario para Firefox
+            e.dataTransfer.setData("text/plain", this.textContent); // Guarda el texto para compatibilidad
+            e.dataTransfer.effectAllowed = "move";
         }
         
         function dragEnd() {
@@ -607,35 +852,56 @@
         }
         
         function dragOver(e) {
-            e.preventDefault();
+            e.preventDefault(); // Necesario para permitir soltar
+            e.dataTransfer.dropEffect = "move";
         }
         
         function dragEnter(e) {
             e.preventDefault();
-            this.style.backgroundColor = "#f0f8ff";
+            this.style.backgroundColor = "#f0f8ff"; // Color cuando se arrastra sobre la zona
         }
         
         function dragLeave() {
-            this.style.backgroundColor = "white";
+            this.style.backgroundColor = "white"; // Volver al color original
         }
         
         function drop(e) {
             e.preventDefault();
-            this.style.backgroundColor = "white";
+            this.style.backgroundColor = "white"; // Restaurar color original
+            
+            // Si la zona está marcada como correcta, no hacer nada
+            if (this.classList.contains("correcta")) {
+                return;
+            }
             
             if (palabraArrastrada) {
-                // Si la palabra ya estaba en una zona drop, la movemos
+                const fraseIndex = parseInt(this.dataset.index);
+                
+                // Si la palabra ya estaba en una zona drop, moverla
                 if (palabraArrastrada.parentElement.classList.contains("zona-drop")) {
                     this.appendChild(palabraArrastrada);
+                    
+                    // Aplicar color especial para palabras colocadas
+                    palabraArrastrada.classList.add("palabra-colocada");
                 } else {
                     // Crear un clon de la palabra y añadirlo a la zona drop
                     const clonPalabra = palabraArrastrada.cloneNode(true);
                     clonPalabra.addEventListener("click", clickPalabraEnZona);
+                    clonPalabra.classList.add("palabra-colocada");
                     this.appendChild(clonPalabra);
                     
                     // Ocultar la palabra original
                     palabraArrastrada.style.display = "none";
                 }
+                
+                // Quitar cualquier clase de correcto/incorrecto anterior
+                Array.from(this.children).forEach(p => {
+                    p.classList.remove("correcta", "incorrecta");
+                });
+                
+                // Quitar cualquier mensaje de resultado
+                const resultadoEl = document.getElementById(`resultado-${fraseIndex}`);
+                resultadoEl.style.display = "none";
                 
                 palabraArrastrada = null;
             }
@@ -643,19 +909,39 @@
         
         // Funciones para el manejo de clicks (para dispositivos móviles)
         function clickPalabra() {
+            // Si la zona está marcada como correcta, no hacer nada
             const fraseIndex = this.dataset.index;
             const zonaDestino = document.getElementById(`zona-drop-${fraseIndex}`);
+            
+            if (zonaDestino.classList.contains("correcta")) {
+                return;
+            }
             
             // Crear un clon de la palabra y añadirlo a la zona drop
             const clonPalabra = this.cloneNode(true);
             clonPalabra.addEventListener("click", clickPalabraEnZona);
+            clonPalabra.classList.add("palabra-colocada");
             zonaDestino.appendChild(clonPalabra);
             
             // Ocultar la palabra original
             this.style.display = "none";
+            
+            // Quitar cualquier clase de correcto/incorrecto anterior
+            Array.from(zonaDestino.children).forEach(p => {
+                p.classList.remove("correcta", "incorrecta");
+            });
+            
+            // Quitar cualquier mensaje de resultado
+            const resultadoEl = document.getElementById(`resultado-${fraseIndex}`);
+            resultadoEl.style.display = "none";
         }
         
         function clickPalabraEnZona() {
+            // Si la zona está marcada como correcta, no hacer nada
+            if (this.parentElement.classList.contains("correcta")) {
+                return;
+            }
+            
             // Al hacer click en una palabra dentro de la zona drop, la devolvemos
             const fraseIndex = this.dataset.index;
             const palabrasOriginales = document.getElementById(`palabras-${fraseIndex}`);
@@ -664,16 +950,21 @@
             Array.from(palabrasOriginales.children).forEach(palabra => {
                 if (palabra.textContent === this.textContent && palabra.style.display === "none") {
                     palabra.style.display = "inline-block";
+                    return; // Salir del forEach después de encontrarla
                 }
             });
             
             // Eliminar el clon de la zona drop
             this.remove();
+            
+            // Quitar cualquier mensaje de resultado
+            const resultadoEl = document.getElementById(`resultado-${fraseIndex}`);
+            resultadoEl.style.display = "none";
         }
         
         function clickZonaDestino() {
-            // Esta función se puede utilizar si queremos alguna acción al
-            // hacer click en la zona de destino
+            // Esta función se utiliza para seleccionar una zona al hacer clic
+            // No es necesaria una implementación específica en este caso
         }
     </script>
 </body>
