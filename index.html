@@ -52,7 +52,7 @@
             cursor: pointer;
             user-select: none;
             font-weight: bold;
-            transition: transform 0.1s, box-shadow 0.1s;
+            transition: all 0.3s ease;
         }
         .palabra:hover {
             transform: translateY(-2px);
@@ -66,6 +66,31 @@
         }
         .palabra.incorrecta {
             background-color: #f44336;
+        }
+        /* Colores para las palabras en la zona de destino */
+        .palabra-colocada-1 {
+            background-color: #FF5722; /* Naranja */
+        }
+        .palabra-colocada-2 {
+            background-color: #9C27B0; /* Púrpura */
+        }
+        .palabra-colocada-3 {
+            background-color: #3F51B5; /* Índigo */
+        }
+        .palabra-colocada-4 {
+            background-color: #009688; /* Verde azulado */
+        }
+        .palabra-colocada-5 {
+            background-color: #FF9800; /* Ámbar */
+        }
+        .palabra-colocada-6 {
+            background-color: #795548; /* Marrón */
+        }
+        .palabra-colocada-7 {
+            background-color: #607D8B; /* Azul grisáceo */
+        }
+        .palabra-colocada-8 {
+            background-color: #E91E63; /* Rosa */
         }
         .frases-container {
             display: flex;
@@ -162,10 +187,24 @@
             background-color: #2d87f0;
             color: white;
         }
-        .contador-tiempo {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #2d87f0;
+        .nivel-descripcion {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        .progreso {
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .barra-progreso {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.5s ease;
         }
     </style>
 </head>
@@ -179,15 +218,15 @@
         <div class="nivel">
             <span class="nivel-label">Nivel:</span>
             <button class="nivel-btn seleccionado" data-nivel="facil">Fácil</button>
-            <button class="nivel-btn" data-nivel="medio">Medio</button>
-            <button class="nivel-btn" data-nivel="dificil">Difícil</button>
-        </div>
+            <button class="nivel-btn" data-nivel=
         <button onclick="iniciarJuego()">¡Comenzar!</button>
     </div>
 
     <div class="puntuacion" style="display: none;">
-        <div class="contador-tiempo">Tiempo: <span id="tiempo">60</span> segundos</div>
-        Puntos: <span id="puntos">0</span>
+        <div class="progreso">
+            <div class="barra-progreso" id="barra-progreso"></div>
+        </div>
+        Puntos: <span id="puntos">0</span> / <span id="total-frases">0</span>
         <div id="motivacion" class="motivacion"></div>
     </div>
 
@@ -639,5 +678,3 @@
     </script>
 </body>
 </html>
-
-
