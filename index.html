@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordena las palabras correctamenteeeee</title>
+    <title>Ordena las palabras correctamente</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,12 +57,12 @@
 
         async function cargarFrases() {
             const proxy = "https://api.allorigins.win/get?url=";
-            const url = "https://claretsegovia-my.sharepoint.com/:u:/g/personal/arodrigo_claretsegoviao365_educamos_com/ERWYOb5BPhRCjWsuzaxIRPQB_0yucB36EXBjgjstPyM_Kw?e=2bDAtc";
+            const url = "https://claretsegovia-my.sharepoint.com/:u:/g/personal/arodrigo_claretsegoviao365_educamos_com/ERWYOb5BPhRCjWsuzaxIRPQB_0yucB36EXBjgjstPyM_Kw?e=2bDAtc"; // URL de OneDrive
 
             try {
                 let response = await fetch(proxy + encodeURIComponent(url));
                 let data = await response.json();
-                let frases = JSON.parse(data.contents).frases;
+                let frases = JSON.parse(data.contents).frases; // Extraer el contenido JSON
                 return frases;
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
@@ -153,3 +153,4 @@
 
 </body>
 </html>
+
