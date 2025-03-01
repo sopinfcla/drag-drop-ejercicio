@@ -22,7 +22,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 800px; /* Más ancho para evitar salto de línea */
+            max-width: 900px; /* Ajuste para evitar saltos de línea */
             margin-left: auto;
             margin-right: auto;
             border: 3px solid #2d87f0;
@@ -38,13 +38,15 @@
             border-bottom: 2px dashed #bbb;
         }
         .zona-drop {
-            min-height: 80px;
-            width: 100%;
+            min-height: 100px;
+            width: 95%;
             background-color: white;
             border-radius: 12px;
             border: 2px dashed #2d87f0;
-            background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
-            background-size: 25px 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
         }
         .palabra {
             padding: 12px 18px;
@@ -57,7 +59,10 @@
             font-weight: bold;
             user-select: none;
             transition: transform 0.2s ease-in-out, background 0.3s;
-            opacity: 0.9;
+        }
+        .palabra.correcta {
+            background-color: rgba(41, 128, 185, 0.9) !important;
+            cursor: default;
         }
         .botones {
             margin-top: 20px;
@@ -110,9 +115,12 @@
         let frasesUsadas = new Set();
         let puntos = 0;
 
-        // Pedir el nombre del jugador al inicio y guardarlo
-        let jugador = localStorage.getItem("jugador") || prompt("¿Cuál es tu nombre?");
-        localStorage.setItem("jugador", jugador);
+        // Pedir el nombre del jugador si no está guardado
+        let jugador = localStorage.getItem("jugador");
+        if (!jugador) {
+            jugador = prompt("¿Cuál es tu nombre?");
+            localStorage.setItem("jugador", jugador);
+        }
         document.getElementById("jugador").textContent = jugador;
 
         const urlFrases = "frases.json"; 
@@ -127,7 +135,7 @@
                 let frasesDisponibles = data.frases.filter(f => !frasesUsadas.has(JSON.stringify(f.orden_correcto)));
                 frases = frasesDisponibles.length > 5 ? seleccionarCincoAleatorias(frasesDisponibles) : frasesDisponibles;
 
-                frases.forEach(f => frasesUsadas.add(JSON.stringify(f.orden_correcto))); // Marcar como usada
+                frases.forEach(f => frasesUsadas.add(JSON.stringify(f.orden_correcto)));
                 mostrarFrases();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
@@ -185,6 +193,8 @@
                         e.dataTransfer.setData("text", palabra);
                     });
 
+                    palabraElem.addEventListener("dragover", (e) => e.preventDefault());
+
                     zonaPalabras.appendChild(palabraElem);
                 });
             });
@@ -198,8 +208,6 @@
                 if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
                     zonaDrop.classList.add("correcto");
                     puntos++;
-                } else {
-                    zonaDrop.classList.add("incorrecto");
                 }
             });
 
@@ -217,4 +225,3 @@
 
 </body>
 </html>
-
