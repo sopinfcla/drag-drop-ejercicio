@@ -188,7 +188,7 @@
                 zonaDrop.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = document.querySelector(`.palabra:contains("${texto}")`);
+                    let palabraMovida = [...document.querySelectorAll(".palabra")].find(p => p.textContent === texto);
                     
                     if (palabraMovida) {
                         palabraMovida.classList.add("palabra-en-drop");
