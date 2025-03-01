@@ -34,9 +34,6 @@
             margin-top: 10px;
             padding: 10px;
         }
-        .zona-palabras {
-            border-bottom: 2px dashed #bbb;
-        }
         .zona-drop {
             min-height: 80px;
             width: 90%;
@@ -45,6 +42,11 @@
             border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
             background-size: 25px 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            min-height: 50px;
+            padding: 10px;
         }
         .palabra {
             padding: 12px 18px;
@@ -73,6 +75,9 @@
         .incorrecto {
             background-color: #ffb3b3 !important;
             border: 3px solid #cc0000 !important;
+        }
+        .bloqueado {
+            pointer-events: none;
         }
         .botones {
             margin-top: 20px;
@@ -123,6 +128,7 @@
         let frasesDisponibles = [];
         let frasesSeleccionadas = [];
         let puntos = 0;
+        let frasesYaPuntuadas = new Set();
 
         async function cargarFrases() {
             try {
@@ -205,9 +211,14 @@
                 let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent.trim());
 
                 if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
-                    zonaDrop.classList.add("correcto");
-                    aciertos++;
+                    if (!frasesYaPuntuadas.has(index)) {
+                        zonaDrop.classList.add("correcto");
+                        frasesYaPuntuadas.add(index);
+                        aciertos++;
+                    }
+                    zonaDrop.classList.add("bloqueado");
                 } else {
+                    zonaDrop.classList.remove("correcto");
                     zonaDrop.classList.add("incorrecto");
                 }
             });
