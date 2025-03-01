@@ -131,7 +131,7 @@
             return lista.sort(() => 0.5 - Math.random()).slice(0, 10);
         }
 
-        function crearPalabra(texto, index) {
+        function crearPalabra(texto) {
             let span = document.createElement("span");
             span.classList.add("palabra");
             span.textContent = texto;
@@ -139,7 +139,7 @@
 
             span.addEventListener("dragstart", (e) => {
                 e.dataTransfer.setData("text", texto);
-                e.dataTransfer.setData("index", index);
+                e.dataTransfer.setData("originalParent", span.parentElement.id);
             });
 
             return span;
@@ -166,7 +166,7 @@
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
                 palabrasDesordenadas.forEach((palabra) => {
-                    let palabraElem = crearPalabra(palabra, index);
+                    let palabraElem = crearPalabra(palabra);
                     zonaPalabras.appendChild(palabraElem);
                 });
 
@@ -175,20 +175,11 @@
                 zonaDrop.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...zonaPalabras.children, ...zonaDrop.children].find(p => p.textContent === texto);
-                    if (palabraMovida && palabraMovida.parentElement !== zonaDrop) {
-                        palabraMovida.classList.add("palabra-en-drop");
-                        zonaDrop.appendChild(palabraMovida);
-                    }
-                });
-
-                zonaDrop.addEventListener("dragover", (e) => e.preventDefault());
-
-                zonaDrop.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...zonaDrop.children].find(p => p.textContent === texto);
+                    let originalParent = document.getElementById(e.dataTransfer.getData("originalParent"));
+                    let palabraMovida = [...originalParent.children].find(p => p.textContent === texto);
+                    
                     if (palabraMovida) {
+                        palabraMovida.classList.add("palabra-en-drop");
                         zonaDrop.appendChild(palabraMovida);
                     }
                 });
@@ -198,7 +189,9 @@
                 zonaPalabras.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
+                    let originalParent = document.getElementById(e.dataTransfer.getData("originalParent"));
                     let palabraMovida = [...zonaDrop.children].find(p => p.textContent === texto);
+
                     if (palabraMovida) {
                         palabraMovida.classList.remove("palabra-en-drop");
                         zonaPalabras.appendChild(palabraMovida);
@@ -226,4 +219,3 @@
 
 </body>
 </html>
-
