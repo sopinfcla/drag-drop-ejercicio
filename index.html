@@ -53,14 +53,18 @@
     <script>
         let frases = [];
         let ordenCorrecto = [];
-        const urlJson = "https://sopinficla.github.io/drag-drop-ejercicio/frases.json"; // URL del JSON en GitHub
+        const urlJson = "frases.json"; // URL relativa al JSON en GitHub
 
         async function cargarFrases() {
             try {
                 let response = await fetch(urlJson);
-                if (!response.ok) throw new Error(`Error al cargar: ${response.status}`);
+                if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
 
                 let data = await response.json();
+                if (!data.frases || data.frases.length === 0) {
+                    throw new Error("El JSON no contiene frases válidas.");
+                }
+                
                 frases = data.frases; 
                 iniciarEjercicio();
             } catch (error) {
@@ -74,6 +78,11 @@
 
             zonaPalabras.innerHTML = "";
             zonaDrop.innerHTML = "";
+
+            if (frases.length === 0) {
+                console.error("No hay frases disponibles.");
+                return;
+            }
 
             // Selecciona una frase aleatoria
             let fraseSeleccionada = frases[Math.floor(Math.random() * frases.length)];
@@ -89,23 +98,34 @@
 
                 span.addEventListener("dragstart", (e) => {
                     e.dataTransfer.setData("text", e.target.textContent);
+                    e.target.classList.add("arrastrando");
+                });
+
+                span.addEventListener("dragend", (e) => {
+                    e.target.classList.remove("arrastrando");
                 });
 
                 zonaPalabras.appendChild(span);
             });
 
-            // Zona de drop
+            // Configuración de la zona de drop
             zonaDrop.addEventListener("dragover", (e) => {
                 e.preventDefault();
             });
 
             zonaDrop.addEventListener("drop", (e) => {
                 e.preventDefault();
+                
                 let texto = e.dataTransfer.getData("text");
-                let span = document.createElement("span");
-                span.classList.add("palabra");
-                span.textContent = texto;
-                zonaDrop.appendChild(span);
+                let palabrasEnZona = zonaDrop.children.length;
+
+                // Evitar que se añadan más palabras de las necesarias
+                if (palabrasEnZona < ordenCorrecto.length) {
+                    let span = document.createElement("span");
+                    span.classList.add("palabra");
+                    span.textContent = texto;
+                    zonaDrop.appendChild(span);
+                }
             });
         }
 
