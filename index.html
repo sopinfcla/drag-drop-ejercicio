@@ -15,7 +15,6 @@
             color: #2d87f0;
             font-size: 28px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .frase-container {
             margin-bottom: 20px;
@@ -28,11 +27,13 @@
             margin-right: auto;
             border: 3px solid #2d87f0;
         }
-        .contenedor {
+        .zona-palabras {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 10px;
+            padding: 10px;
+            border-bottom: 2px dashed #bbb;
         }
         .palabra {
             padding: 12px 18px;
@@ -64,11 +65,9 @@
             justify-content: center;
             transition: background 0.3s ease-in-out;
             border-radius: 12px;
+            border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
             background-size: 25px 25px;
-        }
-        .zona-drop:hover {
-            border-color: #ff5733;
         }
         .correcto {
             background-color: #b3ffb3 !important;
@@ -137,14 +136,7 @@
         }
 
         function seleccionarDiezAleatorias(lista) {
-            let seleccionadas = [];
-            let indices = new Set();
-            while (indices.size < 10) {
-                let randomIndex = Math.floor(Math.random() * lista.length);
-                indices.add(randomIndex);
-            }
-            indices.forEach(index => seleccionadas.push(lista[index]));
-            return seleccionadas;
+            return lista.sort(() => 0.5 - Math.random()).slice(0, 10);
         }
 
         function crearPalabra(texto) {
@@ -175,8 +167,8 @@
 
                 contenedorFrase.innerHTML = `
                     <h3>Frase ${index + 1}</h3>
-                    <div id="zona-palabras-${index}" class="contenedor"></div>
                     <div id="zona-drop-${index}" class="zona-drop" data-index="${index}"></div>
+                    <div id="zona-palabras-${index}" class="zona-palabras"></div>
                 `;
 
                 frasesContainer.appendChild(contenedorFrase);
@@ -186,7 +178,12 @@
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
                 palabrasDesordenadas.forEach((palabra) => {
-                    zonaPalabras.appendChild(crearPalabra(palabra));
+                    let palabraElem = crearPalabra(palabra);
+                    palabraElem.addEventListener("dragstart", (e) => {
+                        e.dataTransfer.setData("text", palabra);
+                        e.target.classList.add("dragging");
+                    });
+                    zonaPalabras.appendChild(palabraElem);
                 });
 
                 zonaDrop.addEventListener("dragover", (e) => {
@@ -195,15 +192,24 @@
 
                 zonaDrop.addEventListener("drop", (e) => {
                     e.preventDefault();
-                    
                     let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = crearPalabra(texto);
-                    
-                    palabraMovida.addEventListener("click", () => {
-                        zonaPalabras.appendChild(palabraMovida);
-                    });
+                    let palabraMovida = [...zonaPalabras.children].find(p => p.textContent === texto);
+                    if (palabraMovida) {
+                        zonaDrop.appendChild(palabraMovida);
+                    }
+                });
 
-                    zonaDrop.appendChild(palabraMovida);
+                zonaPalabras.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                });
+
+                zonaPalabras.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    let texto = e.dataTransfer.getData("text");
+                    let palabraMovida = [...zonaDrop.children].find(p => p.textContent === texto);
+                    if (palabraMovida) {
+                        zonaPalabras.appendChild(palabraMovida);
+                    }
                 });
             });
         }
@@ -213,25 +219,13 @@
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
                 let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
                 
-                if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
-                    zonaDrop.classList.add("correcto");
-                    zonaDrop.classList.remove("incorrecto");
-                } else {
-                    zonaDrop.classList.add("incorrecto");
-                    zonaDrop.classList.remove("correcto");
-                }
+                zonaDrop.classList.toggle("correcto", JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto));
+                zonaDrop.classList.toggle("incorrecto", JSON.stringify(palabrasEnZona) !== JSON.stringify(frase.orden_correcto));
             });
         }
 
         function reiniciar() {
-            document.querySelectorAll(".zona-drop").forEach(zona => {
-                zona.classList.remove("correcto", "incorrecto");
-                zona.innerHTML = "";
-            });
-            document.querySelectorAll(".contenedor").forEach(zona => {
-                zona.innerHTML = "";
-            });
-            mostrarFrases();
+            cargarFrases();
         }
 
         cargarFrases();
@@ -239,3 +233,4 @@
 
 </body>
 </html>
+
