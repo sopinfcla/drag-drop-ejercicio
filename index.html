@@ -6,31 +6,47 @@
     <title>Ordena las palabras correctamente</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .frase-container {
+            margin-bottom: 30px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
         .contenedor {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
         .palabra {
-            padding: 10px;
+            padding: 8px 12px;
             margin: 5px;
-            background-color: lightgray;
-            border: 1px solid #000;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
             cursor: grab;
-            display: inline-block;
+            font-weight: bold;
         }
         .zona-drop {
-            min-height: 50px;
+            min-height: 60px;
             width: 80%;
             margin: auto;
-            border: 2px dashed #000;
+            border: 2px dashed #333;
             padding: 10px;
+            background-color: white;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            transition: background 0.3s ease-in-out;
         }
         .correcto {
             background-color: lightgreen;
@@ -38,22 +54,38 @@
         .incorrecto {
             background-color: lightcoral;
         }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .botones {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Ordena las palabras correctamente</h2>
+    <h2>Ordena todas las frases correctamente</h2>
+    
+    <div id="frases-container"></div>
 
-    <div id="zona-palabras" class="contenedor"></div>
-    <div id="zona-drop" class="zona-drop"></div>
-
-    <button onclick="verificarOrden()">Verificar</button>
-    <button onclick="reiniciar()">Reiniciar</button>
+    <div class="botones">
+        <button onclick="verificarTodas()">Verificar todas</button>
+        <button onclick="reiniciar()">Reiniciar</button>
+    </div>
 
     <script>
         let frases = [];
-        let ordenCorrecto = [];
-        const urlJson = "frases.json"; // URL relativa al JSON en GitHub
+        const urlJson = "frases.json"; // Archivo en la misma carpeta
 
         async function cargarFrases() {
             try {
@@ -65,89 +97,100 @@
                     throw new Error("El JSON no contiene frases válidas.");
                 }
                 
-                frases = data.frases; 
-                iniciarEjercicio();
+                frases = data.frases;
+                mostrarFrases();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
             }
         }
 
-        function iniciarEjercicio() {
-            const zonaPalabras = document.getElementById("zona-palabras");
-            const zonaDrop = document.getElementById("zona-drop");
+        function mostrarFrases() {
+            const frasesContainer = document.getElementById("frases-container");
+            frasesContainer.innerHTML = "";
 
-            zonaPalabras.innerHTML = "";
-            zonaDrop.innerHTML = "";
+            frases.forEach((frase, index) => {
+                let contenedorFrase = document.createElement("div");
+                contenedorFrase.classList.add("frase-container");
 
-            if (frases.length === 0) {
-                console.error("No hay frases disponibles.");
-                return;
-            }
+                contenedorFrase.innerHTML = `
+                    <h3>Frase ${index + 1}</h3>
+                    <div id="zona-palabras-${index}" class="contenedor"></div>
+                    <div id="zona-drop-${index}" class="zona-drop" data-index="${index}"></div>
+                `;
 
-            // Selecciona una frase aleatoria
-            let fraseSeleccionada = frases[Math.floor(Math.random() * frases.length)];
-            let palabrasDesordenadas = [...fraseSeleccionada.palabras].sort(() => Math.random() - 0.5);
-            ordenCorrecto = fraseSeleccionada.orden_correcto;
+                frasesContainer.appendChild(contenedorFrase);
 
-            // Crea palabras arrastrables
-            palabrasDesordenadas.forEach((palabra) => {
-                let span = document.createElement("span");
-                span.classList.add("palabra");
-                span.textContent = palabra;
-                span.draggable = true;
+                // Obtener las palabras y desordenarlas
+                let palabrasDesordenadas = [...frase.palabras].sort(() => Math.random() - 0.5);
+                let zonaPalabras = document.getElementById(`zona-palabras-${index}`);
+                let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
-                span.addEventListener("dragstart", (e) => {
-                    e.dataTransfer.setData("text", e.target.textContent);
-                    e.target.classList.add("arrastrando");
+                // Crear palabras arrastrables
+                palabrasDesordenadas.forEach((palabra) => {
+                    let span = document.createElement("span");
+                    span.classList.add("palabra");
+                    span.textContent = palabra;
+                    span.draggable = true;
+
+                    span.addEventListener("dragstart", (e) => {
+                        e.dataTransfer.setData("text", e.target.textContent);
+                    });
+
+                    zonaPalabras.appendChild(span);
                 });
 
-                span.addEventListener("dragend", (e) => {
-                    e.target.classList.remove("arrastrando");
+                // Configurar la zona de drop
+                zonaDrop.addEventListener("dragover", (e) => {
+                    e.preventDefault();
                 });
 
-                zonaPalabras.appendChild(span);
-            });
+                zonaDrop.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    
+                    let texto = e.dataTransfer.getData("text");
+                    let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
 
-            // Configuración de la zona de drop
-            zonaDrop.addEventListener("dragover", (e) => {
-                e.preventDefault();
-            });
+                    // Evitar palabras repetidas y que se exceda el número permitido
+                    if (palabrasEnZona.includes(texto) || palabrasEnZona.length >= frase.orden_correcto.length) {
+                        return;
+                    }
 
-            zonaDrop.addEventListener("drop", (e) => {
-                e.preventDefault();
-                
-                let texto = e.dataTransfer.getData("text");
-                let palabrasEnZona = zonaDrop.children.length;
-
-                // Evitar que se añadan más palabras de las necesarias
-                if (palabrasEnZona < ordenCorrecto.length) {
                     let span = document.createElement("span");
                     span.classList.add("palabra");
                     span.textContent = texto;
                     zonaDrop.appendChild(span);
+                });
+            });
+        }
+
+        function verificarTodas() {
+            frases.forEach((frase, index) => {
+                let zonaDrop = document.getElementById(`zona-drop-${index}`);
+                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
+                
+                if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
+                    zonaDrop.classList.add("correcto");
+                    zonaDrop.classList.remove("incorrecto");
+                } else {
+                    zonaDrop.classList.add("incorrecto");
+                    zonaDrop.classList.remove("correcto");
                 }
             });
         }
 
-        function verificarOrden() {
-            const palabrasEnZona = Array.from(document.getElementById("zona-drop").children).map(el => el.textContent);
-            
-            if (JSON.stringify(palabrasEnZona) === JSON.stringify(ordenCorrecto)) {
-                document.getElementById("zona-drop").classList.add("correcto");
-                document.getElementById("zona-drop").classList.remove("incorrecto");
-            } else {
-                document.getElementById("zona-drop").classList.add("incorrecto");
-                document.getElementById("zona-drop").classList.remove("correcto");
-            }
-        }
-
         function reiniciar() {
-            document.getElementById("zona-drop").classList.remove("correcto", "incorrecto");
-            iniciarEjercicio();
+            document.querySelectorAll(".zona-drop").forEach(zona => {
+                zona.classList.remove("correcto", "incorrecto");
+                zona.innerHTML = "";
+            });
+            mostrarFrases();
         }
 
         cargarFrases();
     </script>
+
+</body>
+</html>
 
 </body>
 </html>
