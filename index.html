@@ -120,13 +120,13 @@
     </div>
 
     <script>
-        let frases = [];
+        let frasesDisponibles = [];
+        let frasesSeleccionadas = [];
         let puntos = 0;
-        const urlJson = "frases.json"; 
 
         async function cargarFrases() {
             try {
-                let response = await fetch(urlJson);
+                let response = await fetch("frases.json");
                 if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
 
                 let data = await response.json();
@@ -134,15 +134,15 @@
                     throw new Error("El JSON no contiene frases válidas.");
                 }
 
-                frases = data.frases.length > 5 ? seleccionarCincoAleatorias(data.frases) : data.frases;
-                mostrarFrases();
+                frasesDisponibles = data.frases;
+                nuevaRonda();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
             }
         }
 
-        function seleccionarCincoAleatorias(lista) {
-            return lista.sort(() => 0.5 - Math.random()).slice(0, 5);
+        function seleccionarCincoAleatorias() {
+            return frasesDisponibles.sort(() => 0.5 - Math.random()).slice(0, 5);
         }
 
         function crearPalabra(texto) {
@@ -162,7 +162,7 @@
             const frasesContainer = document.getElementById("frases-container");
             frasesContainer.innerHTML = "";
 
-            frases.forEach((frase, index) => {
+            frasesSeleccionadas.forEach((frase, index) => {
                 let contenedorFrase = document.createElement("div");
                 contenedorFrase.classList.add("frase-container");
 
@@ -200,7 +200,7 @@
 
         function verificarTodas() {
             let aciertos = 0;
-            frases.forEach((frase, index) => {
+            frasesSeleccionadas.forEach((frase, index) => {
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
                 let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent.trim());
 
@@ -228,7 +228,8 @@
         }
 
         function nuevaRonda() {
-            cargarFrases();
+            frasesSeleccionadas = seleccionarCincoAleatorias();
+            mostrarFrases();
         }
 
         cargarFrases();
