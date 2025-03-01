@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordenar palabras - Drag & Drop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .words {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .word {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: grab;
+        }
+        .pauta {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border: 2px dashed #aaa;
+            min-height: 50px;
+            width: 300px;
+            flex-wrap: wrap;
+        }
+        .pauta .word {
+            background-color: #dff0d8;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button.reset {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h2>Ordena las palabras correctamente</h2>
+    <div class="container">
+        <div class="words" id="wordBank">
+            <div class="word" draggable="true">el</div>
+            <div class="word" draggable="true">gato</div>
+            <div class="word" draggable="true">negro</div>
+            <div class="word" draggable="true">salta</div>
+        </div>
+        <div class="pauta" id="dropZone"></div>
+        <button class="button" onclick="verificarOrden()">Verificar</button>
+        <button class="button reset" onclick="resetearEjercicio()">Reiniciar</button>
+    </div>
+
+    <script>
+        let correctOrder = ["el", "gato", "negro", "salta"];
+        let dropZone = document.getElementById("dropZone");
+        let wordBank = document.getElementById("wordBank");
+
+        function makeDraggable() {
+            document.querySelectorAll(".word").forEach(word => {
+                word.draggable = true;
+                word.addEventListener("dragstart", (e) => {
+                    e.dataTransfer.setData("text", e.target.innerText);
+                    e.dataTransfer.setData("id", e.target.id);
+                });
+            });
+        }
+
+        makeDraggable();
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            let text = e.dataTransfer.getData("text");
+            let newWord = document.createElement("div");
+            newWord.className = "word";
+            newWord.draggable = true;
+            newWord.innerText = text;
+            newWord.addEventListener("dragstart", (ev) => {
+                ev.dataTransfer.setData("text", ev.target.innerText);
+            });
+            dropZone.appendChild(newWord);
+        });
+
+        function verificarOrden() {
+            let palabrasOrdenadas = Array.from(dropZone.children).map(word => word.innerText);
+            if (JSON.stringify(palabrasOrdenadas) === JSON.stringify(correctOrder)) {
+                alert("¡Correcto! Has ordenado bien la frase.");
+            } else {
+                alert("Inténtalo de nuevo. El orden no es correcto.");
+            }
+        }
+
+        function resetearEjercicio() {
+            dropZone.innerHTML = "";
+            wordBank.innerHTML = "";
+            let palabras = ["el", "gato", "negro", "salta"];
+            palabras.forEach(palabra => {
+                let wordElement = document.createElement("div");
+                wordElement.className = "word";
+                wordElement.draggable = true;
+                wordElement.innerText = palabra;
+                wordElement.addEventListener("dragstart", (ev) => {
+                    ev.dataTransfer.setData("text", ev.target.innerText);
+                });
+                wordBank.appendChild(wordElement);
+            });
+        }
+    </script>
+</body>
+</html>
