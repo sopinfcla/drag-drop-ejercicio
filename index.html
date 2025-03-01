@@ -55,7 +55,7 @@
             opacity: 1;
         }
         .palabra-en-drop {
-            background-color: rgba(41, 128, 185, 0.9) !important; /* Azul claro */
+            background-color: rgba(41, 128, 185, 0.9) !important;
             opacity: 1 !important;
         }
         .zona-drop {
@@ -190,10 +190,14 @@
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
                     let palabraMovida = [...zonaPalabras.children, ...zonaDrop.children].find(p => p.textContent === texto);
-                    if (palabraMovida && palabraMovida.parentNode !== zonaDrop) {
+                    if (palabraMovida) {
                         palabraMovida.classList.add("palabra-en-drop");
                         zonaDrop.appendChild(palabraMovida);
                     }
+                });
+
+                zonaDrop.addEventListener("dragstart", (e) => {
+                    e.dataTransfer.setData("text", e.target.textContent);
                 });
 
                 zonaPalabras.addEventListener("dragover", (e) => {
@@ -231,3 +235,4 @@
 
 </body>
 </html>
+
