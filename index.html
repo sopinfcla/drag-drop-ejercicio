@@ -38,6 +38,7 @@
             border-radius: 5px;
             cursor: grab;
             font-weight: bold;
+            user-select: none;
         }
         .zona-drop {
             min-height: 60px;
@@ -99,12 +100,47 @@
                 if (!data.frases || data.frases.length === 0) {
                     throw new Error("El JSON no contiene frases válidas.");
                 }
-                
-                frases = data.frases;
+
+                // Si hay más de 10 frases, seleccionamos 10 al azar
+                if (data.frases.length > 10) {
+                    frases = seleccionarDiezAleatorias(data.frases);
+                } else {
+                    frases = data.frases;
+                }
+
                 mostrarFrases();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
             }
+        }
+
+        function seleccionarDiezAleatorias(lista) {
+            let seleccionadas = [];
+            let indices = new Set();
+            while (indices.size < 10) {
+                let randomIndex = Math.floor(Math.random() * lista.length);
+                indices.add(randomIndex);
+            }
+            indices.forEach(index => seleccionadas.push(lista[index]));
+            return seleccionadas;
+        }
+
+        function crearPalabra(texto) {
+            let span = document.createElement("span");
+            span.classList.add("palabra");
+            span.textContent = texto;
+            span.draggable = true;
+
+            span.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text", e.target.textContent);
+                setTimeout(() => e.target.style.display = "none", 0);
+            });
+
+            span.addEventListener("dragend", (e) => {
+                e.target.style.display = "inline-block";
+            });
+
+            return span;
         }
 
         function mostrarFrases() {
@@ -123,23 +159,12 @@
 
                 frasesContainer.appendChild(contenedorFrase);
 
-                // Obtener las palabras y desordenarlas
                 let palabrasDesordenadas = [...frase.palabras].sort(() => Math.random() - 0.5);
                 let zonaPalabras = document.getElementById(`zona-palabras-${index}`);
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
-                // Crear palabras arrastrables
                 palabrasDesordenadas.forEach((palabra) => {
-                    let span = document.createElement("span");
-                    span.classList.add("palabra");
-                    span.textContent = palabra;
-                    span.draggable = true;
-
-                    span.addEventListener("dragstart", (e) => {
-                        e.dataTransfer.setData("text", e.target.textContent);
-                    });
-
-                    zonaPalabras.appendChild(span);
+                    zonaPalabras.appendChild(crearPalabra(palabra));
                 });
 
                 // Configurar la zona de drop
@@ -151,17 +176,13 @@
                     e.preventDefault();
                     
                     let texto = e.dataTransfer.getData("text");
-                    let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
+                    let palabraMovida = crearPalabra(texto);
+                    
+                    palabraMovida.addEventListener("click", () => {
+                        zonaPalabras.appendChild(palabraMovida);
+                    });
 
-                    // Evitar palabras repetidas y que se exceda el número permitido
-                    if (palabrasEnZona.includes(texto) || palabrasEnZona.length >= frase.orden_correcto.length) {
-                        return;
-                    }
-
-                    let span = document.createElement("span");
-                    span.classList.add("palabra");
-                    span.textContent = texto;
-                    zonaDrop.appendChild(span);
+                    zonaDrop.appendChild(palabraMovida);
                 });
             });
         }
@@ -186,6 +207,9 @@
                 zona.classList.remove("correcto", "incorrecto");
                 zona.innerHTML = "";
             });
+            document.querySelectorAll(".contenedor").forEach(zona => {
+                zona.innerHTML = "";
+            });
             mostrarFrases();
         }
 
@@ -194,3 +218,4 @@
 
 </body>
 </html>
+
