@@ -148,30 +148,6 @@
             }
         }
 
-        async function cargarFrasesMotivadoras() {
-            try {
-                let response = await fetch(urlFrasesMotivadoras);
-                if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
-
-                let data = await response.json();
-                if (!data.frases || data.frases.length === 0) {
-                    throw new Error("No se encontraron frases motivadoras.");
-                }
-
-                frasesMotivadoras = data.frases;
-                mostrarFraseMotivadora();
-            } catch (error) {
-                console.error("Error al cargar frases motivadoras:", error);
-            }
-        }
-
-        function mostrarFraseMotivadora() {
-            if (frasesMotivadoras.length > 0) {
-                let fraseAleatoria = frasesMotivadoras[Math.floor(Math.random() * frasesMotivadoras.length)];
-                document.getElementById("mensajeMotivador").textContent = `${nombreJugador}, ${fraseAleatoria}`;
-            }
-        }
-
         function seleccionarCincoAleatorias(lista) {
             return lista.sort(() => 0.5 - Math.random()).slice(0, 5);
         }
@@ -186,7 +162,7 @@
 
                 contenedorFrase.innerHTML = `
                     <h3>Frase ${index + 1}</h3>
-                    <div id="zona-drop-${index}" class="zona-drop"></div>
+                    <div id="zona-drop-${index}" class="zona-drop" ondragover="event.preventDefault()"></div>
                     <div id="zona-palabras-${index}" class="zona-palabras"></div>
                 `;
 
@@ -203,30 +179,46 @@
 
                     span.addEventListener("dragstart", (e) => {
                         e.dataTransfer.setData("text", palabra);
+                        setTimeout(() => span.classList.add("dragging"), 0);
+                    });
+
+                    span.addEventListener("dragend", () => {
+                        span.classList.remove("dragging");
                     });
 
                     zonaPalabras.appendChild(span);
                 });
 
-                zonaDrop.addEventListener("dragover", (e) => e.preventDefault());
                 zonaDrop.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = document.querySelector(`.palabra:contains("${texto}")`);
-                    
-                    if (palabraMovida) zonaDrop.appendChild(palabraMovida);
+                    let palabraMovida = [...zonaPalabras.children, ...zonaDrop.children].find(p => p.textContent === texto);
+
+                    if (palabraMovida && !zonaDrop.contains(palabraMovida)) {
+                        zonaDrop.appendChild(palabraMovida);
+                    }
                 });
             });
         }
 
-        function nuevaRonda() {
-            mostrarFraseMotivadora();
-            cargarFrases();
+        function verificarTodas() {
+            frases.forEach((frase, index) => {
+                let zonaDrop = document.getElementById(`zona-drop-${index}`);
+                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
+
+                if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
+                    zonaDrop.classList.add("correcto");
+                    puntos++;
+                } else {
+                    zonaDrop.classList.add("incorrecto");
+                }
+            });
+
+            document.getElementById("puntos").textContent = puntos;
         }
 
         pedirNombre();
         cargarFrases();
-        cargarFrasesMotivadoras();
     </script>
 
 </body>
