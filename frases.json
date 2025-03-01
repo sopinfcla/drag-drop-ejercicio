@@ -1,0 +1,12 @@
+{
+    "frases": [
+        {
+            "palabras": ["el", "gato", "negro", "salta"],
+            "orden_correcto": ["el", "gato", "negro", "salta"]
+        },
+        {
+            "palabras": ["el", "perro", "corre", "rápido"],
+            "orden_correcto": ["el", "perro", "corre", "rápido"]
+        }
+    ]
+}
