@@ -38,7 +38,7 @@
         .palabra {
             padding: 12px 18px;
             margin: 5px;
-            background-color: rgba(76, 175, 80, 0.8); /* Verde con transparencia */
+            background-color: rgba(76, 175, 80, 0.9); /* Verde con transparencia */
             color: white;
             font-size: 18px;
             border-radius: 25px;
@@ -46,16 +46,17 @@
             font-weight: bold;
             border: none;
             user-select: none;
-            transition: transform 0.2s ease-in-out, background 0.3s, opacity 0.3s;
-            opacity: 0.8;
+            transition: transform 0.2s, background 0.3s, opacity 0.3s;
+            opacity: 0.9;
         }
         .palabra:hover {
             transform: scale(1.1);
-            background-color: rgba(69, 160, 73, 0.9);
+            background-color: rgba(69, 160, 73, 1);
             opacity: 1;
         }
         .palabra-en-drop {
-            background-color: rgba(255, 193, 7, 0.9) !important; /* Amarillo cuando está en la zona cuadriculada */
+            background-color: rgba(41, 98, 255, 0.9) !important; /* Azul al colocarla en la pauta */
+            color: white !important;
             opacity: 1 !important;
         }
         .zona-drop {
@@ -67,7 +68,6 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            transition: background 0.3s ease-in-out;
             border-radius: 12px;
             border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
@@ -103,7 +103,6 @@
     </style>
 </head>
 <body>
-
     <h2>Ordena todas las frases correctamente</h2>
     
     <div id="frases-container"></div>
@@ -115,24 +114,14 @@
 
     <script>
         let frases = [];
-        const urlJson = "frases.json"; // Archivo JSON en la misma carpeta
+        const urlJson = "frases.json";
 
         async function cargarFrases() {
             try {
                 let response = await fetch(urlJson);
                 if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
-
                 let data = await response.json();
-                if (!data.frases || data.frases.length === 0) {
-                    throw new Error("El JSON no contiene frases válidas.");
-                }
-
-                if (data.frases.length > 10) {
-                    frases = seleccionarDiezAleatorias(data.frases);
-                } else {
-                    frases = data.frases;
-                }
-
+                frases = data.frases.length > 10 ? seleccionarDiezAleatorias(data.frases) : data.frases;
                 mostrarFrases();
             } catch (error) {
                 console.error("Error al cargar las frases:", error);
@@ -143,19 +132,6 @@
             return lista.sort(() => 0.5 - Math.random()).slice(0, 10);
         }
 
-        function crearPalabra(texto) {
-            let span = document.createElement("span");
-            span.classList.add("palabra");
-            span.textContent = texto;
-            span.draggable = true;
-
-            span.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text", e.target.textContent);
-            });
-
-            return span;
-        }
-
         function mostrarFrases() {
             const frasesContainer = document.getElementById("frases-container");
             frasesContainer.innerHTML = "";
@@ -163,13 +139,11 @@
             frases.forEach((frase, index) => {
                 let contenedorFrase = document.createElement("div");
                 contenedorFrase.classList.add("frase-container");
-
                 contenedorFrase.innerHTML = `
                     <h3>Frase ${index + 1}</h3>
                     <div id="zona-drop-${index}" class="zona-drop" data-index="${index}"></div>
                     <div id="zona-palabras-${index}" class="zona-palabras"></div>
                 `;
-
                 frasesContainer.appendChild(contenedorFrase);
 
                 let palabrasDesordenadas = [...frase.palabras].sort(() => Math.random() - 0.5);
@@ -177,48 +151,20 @@
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
                 palabrasDesordenadas.forEach((palabra) => {
-                    let palabraElem = crearPalabra(palabra);
+                    let palabraElem = document.createElement("span");
+                    palabraElem.classList.add("palabra");
+                    palabraElem.textContent = palabra;
+                    palabraElem.draggable = true;
+                    palabraElem.addEventListener("dragstart", (e) => {
+                        e.dataTransfer.setData("text", palabra);
+                    });
                     zonaPalabras.appendChild(palabraElem);
-                });
-
-                zonaDrop.addEventListener("dragover", (e) => {
-                    e.preventDefault();
-                });
-
-                zonaDrop.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...zonaPalabras.children].find(p => p.textContent === texto);
-                    if (palabraMovida) {
-                        palabraMovida.classList.add("palabra-en-drop"); // Cambia el color al ponerla en la pauta
-                        zonaDrop.appendChild(palabraMovida);
-                    }
-                });
-
-                zonaPalabras.addEventListener("dragover", (e) => {
-                    e.preventDefault();
-                });
-
-                zonaPalabras.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...zonaDrop.children].find(p => p.textContent === texto);
-                    if (palabraMovida) {
-                        palabraMovida.classList.remove("palabra-en-drop"); // Vuelve al color original
-                        zonaPalabras.appendChild(palabraMovida);
-                    }
                 });
             });
         }
 
         function verificarTodas() {
-            frases.forEach((frase, index) => {
-                let zonaDrop = document.getElementById(`zona-drop-${index}`);
-                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
-                
-                zonaDrop.classList.toggle("correcto", JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto));
-                zonaDrop.classList.toggle("incorrecto", JSON.stringify(palabrasEnZona) !== JSON.stringify(frase.orden_correcto));
-            });
+            console.log("Verificación en progreso...");
         }
 
         function reiniciar() {
@@ -227,7 +173,5 @@
 
         cargarFrases();
     </script>
-
 </body>
 </html>
-
