@@ -3,126 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordenar palabras - Drag & Drop</title>
+    <title>Ordena las palabras correctamente</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 20px;
         }
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .words {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
         .word {
+            display: inline-block;
             padding: 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
+            margin: 5px;
+            background-color: lightgray;
+            border: 1px solid black;
             cursor: grab;
         }
-        .pauta {
-            display: flex;
-            gap: 10px;
-            padding: 20px;
-            border: 2px dashed #aaa;
-            min-height: 50px;
-            width: 300px;
-            flex-wrap: wrap;
+        .dropzone {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            min-width: 50px;
+            min-height: 30px;
+            background-color: white;
+            border: 2px dashed gray;
         }
-        .pauta .word {
-            background-color: #dff0d8;
+        .correct {
+            background-color: lightgreen;
         }
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
+        .incorrect {
+            background-color: lightcoral;
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
             cursor: pointer;
-        }
-        .button.reset {
-            background-color: #dc3545;
         }
     </style>
 </head>
 <body>
+
     <h2>Ordena las palabras correctamente</h2>
-    <div class="container">
-        <div class="words" id="wordBank">
-            <div class="word" draggable="true">el</div>
-            <div class="word" draggable="true">gato</div>
-            <div class="word" draggable="true">negro</div>
-            <div class="word" draggable="true">salta</div>
-        </div>
-        <div class="pauta" id="dropZone"></div>
-        <button class="button" onclick="verificarOrden()">Verificar</button>
-        <button class="button reset" onclick="resetearEjercicio()">Reiniciar</button>
-    </div>
+    <div id="words-container" class="container"></div>
+    <div id="dropzone-container" class="container"></div>
+
+    <button onclick="verificarOrden()">Verificar</button>
+    <button onclick="reiniciar()">Reiniciar</button>
 
     <script>
-        let correctOrder = ["el", "gato", "negro", "salta"];
-        let dropZone = document.getElementById("dropZone");
-        let wordBank = document.getElementById("wordBank");
+        let correctOrder = [];
 
-        function makeDraggable() {
-            document.querySelectorAll(".word").forEach(word => {
-                word.draggable = true;
-                word.addEventListener("dragstart", (e) => {
-                    e.dataTransfer.setData("text", e.target.innerText);
-                    e.dataTransfer.setData("id", e.target.id);
-                });
-            });
-        }
+        async function cargarFrases() {
+            const proxy = "https://api.allorigins.win/get?url=";
+            const url = "https://claretsegovia-my.sharepoint.com/:u:/g/personal/arodrigo_claretsegoviao365_educamos_com/ERWYOb5BPhRCjWsuzaxIRPQB_0yucB36EXBjgjstPyM_Kw?e=2bDAtc";
 
-        makeDraggable();
-
-        dropZone.addEventListener("dragover", (e) => {
-            e.preventDefault();
-        });
-
-        dropZone.addEventListener("drop", (e) => {
-            e.preventDefault();
-            let text = e.dataTransfer.getData("text");
-            let newWord = document.createElement("div");
-            newWord.className = "word";
-            newWord.draggable = true;
-            newWord.innerText = text;
-            newWord.addEventListener("dragstart", (ev) => {
-                ev.dataTransfer.setData("text", ev.target.innerText);
-            });
-            dropZone.appendChild(newWord);
-        });
-
-        function verificarOrden() {
-            let palabrasOrdenadas = Array.from(dropZone.children).map(word => word.innerText);
-            if (JSON.stringify(palabrasOrdenadas) === JSON.stringify(correctOrder)) {
-                alert("¡Correcto! Has ordenado bien la frase.");
-            } else {
-                alert("Inténtalo de nuevo. El orden no es correcto.");
+            try {
+                let response = await fetch(proxy + encodeURIComponent(url));
+                let data = await response.json();
+                let frases = JSON.parse(data.contents).frases;
+                return frases;
+            } catch (error) {
+                console.error("Error al cargar las frases:", error);
+                return [];
             }
         }
 
-        function resetearEjercicio() {
-            dropZone.innerHTML = "";
-            wordBank.innerHTML = "";
-            let palabras = ["el", "gato", "negro", "salta"];
-            palabras.forEach(palabra => {
-                let wordElement = document.createElement("div");
-                wordElement.className = "word";
-                wordElement.draggable = true;
-                wordElement.innerText = palabra;
-                wordElement.addEventListener("dragstart", (ev) => {
-                    ev.dataTransfer.setData("text", ev.target.innerText);
-                });
-                wordBank.appendChild(wordElement);
+        async function iniciarEjercicio() {
+            let frases = await cargarFrases();
+            if (frases.length > 0) {
+                let fraseSeleccionada = frases[Math.floor(Math.random() * frases.length)];
+                mostrarPalabras(fraseSeleccionada.palabras);
+                correctOrder = fraseSeleccionada.orden_correcto;
+            }
+        }
+
+        function mostrarPalabras(palabras) {
+            let wordsContainer = document.getElementById("words-container");
+            let dropzoneContainer = document.getElementById("dropzone-container");
+            wordsContainer.innerHTML = "";
+            dropzoneContainer.innerHTML = "";
+
+            palabras.sort(() => Math.random() - 0.5); // Mezclar palabras
+
+            palabras.forEach(word => {
+                let span = document.createElement("span");
+                span.classList.add("word");
+                span.textContent = word;
+                span.draggable = true;
+                span.addEventListener("dragstart", dragStart);
+                wordsContainer.appendChild(span);
+                
+                let dropzone = document.createElement("div");
+                dropzone.classList.add("dropzone");
+                dropzone.addEventListener("dragover", dragOver);
+                dropzone.addEventListener("drop", drop);
+                dropzoneContainer.appendChild(dropzone);
             });
         }
+
+        function dragStart(event) {
+            event.dataTransfer.setData("text", event.target.textContent);
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            let text = event.dataTransfer.getData("text");
+            if (!event.target.textContent) {
+                event.target.textContent = text;
+                event.target.classList.add("word");
+            }
+        }
+
+        function verificarOrden() {
+            let dropzones = document.querySelectorAll(".dropzone");
+            let userOrder = Array.from(dropzones).map(dz => dz.textContent.trim());
+            let allCorrect = true;
+
+            dropzones.forEach((dz, index) => {
+                if (userOrder[index] === correctOrder[index]) {
+                    dz.classList.add("correct");
+                    dz.classList.remove("incorrect");
+                } else {
+                    dz.classList.add("incorrect");
+                    dz.classList.remove("correct");
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                alert("¡Correcto! Has ordenado bien las palabras.");
+            } else {
+                alert("Algunas palabras están mal ordenadas. ¡Inténtalo de nuevo!");
+            }
+        }
+
+        function reiniciar() {
+            iniciarEjercicio();
+        }
+
+        // Iniciar ejercicio al cargar la página
+        iniciarEjercicio();
     </script>
+
 </body>
 </html>
