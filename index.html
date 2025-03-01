@@ -697,21 +697,31 @@
             
             // Obtener el índice real de la frase en el array global
             const fraseIndice = parseInt(document.getElementById(`frase-${index}`).dataset.fraseIndice);
-            const ordenCorrecto = frases[fraseIndice].orden_correcto;
             
-            // Verificar si hay la misma cantidad de palabras
-            if (palabrasEnZona.length !== ordenCorrecto.length) {
-                return false;
-            }
+            // Comprobamos si hay múltiples órdenes correctos
+            const ordenesCorrectos = frases[fraseIndice].ordenes_correctos || [frases[fraseIndice].orden_correcto];
             
-            // Verificar si están en el orden correcto
-            for (let i = 0; i < ordenCorrecto.length; i++) {
-                if (palabrasEnZona[i] !== ordenCorrecto[i]) {
-                    return false;
+            // Verificar si hay la misma cantidad de palabras en al menos una de las combinaciones posibles
+            for (const ordenCorrecto of ordenesCorrectos) {
+                if (palabrasEnZona.length !== ordenCorrecto.length) {
+                    continue; // Si no coincide el tamaño, prueba con la siguiente combinación
+                }
+                
+                // Verificar si están en el orden correcto para esta combinación
+                let ordenCorrecto = true;
+                for (let i = 0; i < ordenCorrecto.length; i++) {
+                    if (palabrasEnZona[i] !== ordenCorrecto[i]) {
+                        ordenCorrecto = false;
+                        break;
+                    }
+                }
+                
+                if (ordenCorrecto) {
+                    return true; // Encontramos una combinación válida
                 }
             }
             
-            return true;
+            return false; // Ninguna combinación coincide
         }
         
         // Función para verificar todas las frases
@@ -877,18 +887,49 @@
             if (palabraArrastrada) {
                 const fraseIndex = parseInt(this.dataset.index);
                 
+                // Determinar la posición donde soltar la palabra basada en la posición del ratón
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                
+                // Encontrar el elemento antes del cual insertar la palabra
+                let anteriorElemento = null;
+                const palabrasEnZona = Array.from(this.children);
+                
+                for (const palabra of palabrasEnZona) {
+                    const palabraRect = palabra.getBoundingClientRect();
+                    const palabraCentro = palabraRect.left + palabraRect.width / 2 - rect.left;
+                    
+                    if (x < palabraCentro) {
+                        anteriorElemento = palabra;
+                        break;
+                    }
+                }
+                
                 // Si la palabra ya estaba en una zona drop, moverla
                 if (palabraArrastrada.parentElement.classList.contains("zona-drop")) {
-                    this.appendChild(palabraArrastrada);
+                    // Insertar antes del elemento encontrado o al final si es null
+                    if (anteriorElemento) {
+                        this.insertBefore(palabraArrastrada, anteriorElemento);
+                    } else {
+                        this.appendChild(palabraArrastrada);
+                    }
                     
-                    // Aplicar color especial para palabras colocadas
+                    // Mantener la clase palabra-colocada
                     palabraArrastrada.classList.add("palabra-colocada");
                 } else {
                     // Crear un clon de la palabra y añadirlo a la zona drop
                     const clonPalabra = palabraArrastrada.cloneNode(true);
                     clonPalabra.addEventListener("click", clickPalabraEnZona);
+                    clonPalabra.addEventListener("dragstart", dragStart);
+                    clonPalabra.addEventListener("dragend", dragEnd);
                     clonPalabra.classList.add("palabra-colocada");
-                    this.appendChild(clonPalabra);
+                    
+                    // Insertar en la posición correcta
+                    if (anteriorElemento) {
+                        this.insertBefore(clonPalabra, anteriorElemento);
+                    } else {
+                        this.appendChild(clonPalabra);
+                    }
                     
                     // Ocultar la palabra original
                     palabraArrastrada.style.display = "none";
@@ -920,6 +961,9 @@
             // Crear un clon de la palabra y añadirlo a la zona drop
             const clonPalabra = this.cloneNode(true);
             clonPalabra.addEventListener("click", clickPalabraEnZona);
+            clonPalabra.addEventListener("dragstart", dragStart); // Agregar evento drag a la palabra clonada
+            clonPalabra.addEventListener("dragend", dragEnd);     // Agregar evento dragend
+            clonPalabra.draggable = true;                         // Asegurar que sea arrastrable
             clonPalabra.classList.add("palabra-colocada");
             zonaDestino.appendChild(clonPalabra);
             
