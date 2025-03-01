@@ -22,7 +22,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 900px; /* Ajuste para evitar saltos de línea */
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
             border: 3px solid #2d87f0;
@@ -43,6 +43,8 @@
             background-color: white;
             border-radius: 12px;
             border: 2px dashed #2d87f0;
+            background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
+            background-size: 25px 25px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -114,11 +116,13 @@
         let frasesMotivadoras = [];
         let frasesUsadas = new Set();
         let puntos = 0;
+        let frasesYaPuntuadas = new Set();
 
         // Pedir el nombre del jugador si no está guardado
         let jugador = localStorage.getItem("jugador");
         if (!jugador) {
             jugador = prompt("¿Cuál es tu nombre?");
+            if (!jugador) jugador = "Jugador";
             localStorage.setItem("jugador", jugador);
         }
         document.getElementById("jugador").textContent = jugador;
@@ -173,7 +177,7 @@
 
                 contenedorFrase.innerHTML = `
                     <h3>Frase ${index + 1}</h3>
-                    <div id="zona-drop-${index}" class="zona-drop" data-index="${index}"></div>
+                    <div id="zona-drop-${index}" class="zona-drop" data-index="${index}" ondrop="drop(event, ${index})" ondragover="allowDrop(event)"></div>
                     <div id="zona-palabras-${index}" class="zona-palabras"></div>
                 `;
 
@@ -181,7 +185,6 @@
 
                 let palabrasDesordenadas = [...frase.palabras].sort(() => Math.random() - 0.5);
                 let zonaPalabras = document.getElementById(`zona-palabras-${index}`);
-                let zonaDrop = document.getElementById(`zona-drop-${index}`);
 
                 palabrasDesordenadas.forEach((palabra) => {
                     let palabraElem = document.createElement("span");
@@ -193,25 +196,13 @@
                         e.dataTransfer.setData("text", palabra);
                     });
 
-                    palabraElem.addEventListener("dragover", (e) => e.preventDefault());
-
                     zonaPalabras.appendChild(palabraElem);
                 });
             });
         }
 
-        function verificarTodas() {
-            frases.forEach((frase, index) => {
-                let zonaDrop = document.getElementById(`zona-drop-${index}`);
-                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
-
-                if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
-                    zonaDrop.classList.add("correcto");
-                    puntos++;
-                }
-            });
-
-            document.getElementById("puntos").textContent = puntos;
+        function allowDrop(event) {
+            event.preventDefault();
         }
 
         function nuevaRonda() {
