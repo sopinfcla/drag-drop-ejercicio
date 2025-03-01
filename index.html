@@ -16,6 +16,16 @@
             font-size: 28px;
             font-weight: bold;
         }
+        .puntuacion {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .motivacion {
+            font-size: 20px;
+            font-style: italic;
+            color: #555;
+            margin: 15px 0;
+        }
         .frase-container {
             margin-bottom: 20px;
             padding: 15px;
@@ -48,10 +58,6 @@
             transition: transform 0.2s ease-in-out, background 0.3s;
             opacity: 0.9;
         }
-        .palabra.correcta {
-            background-color: rgba(41, 128, 185, 0.9) !important;
-            cursor: default;
-        }
         .zona-drop {
             min-height: 80px;
             width: 100%;
@@ -64,14 +70,6 @@
             border: 2px dashed #2d87f0;
             background-image: linear-gradient(transparent 24px, #ddd 25px), linear-gradient(to right, transparent 24px, #ddd 25px);
             background-size: 25px 25px;
-        }
-        .correcto {
-            background-color: #b3ffb3 !important;
-            border: 3px solid #009900 !important;
-        }
-        .incorrecto {
-            background-color: #ffb3b3 !important;
-            border: 3px solid #cc0000 !important;
         }
         button {
             margin: 10px;
@@ -94,28 +92,70 @@
 <body>
 
     <h2>Ordena todas las frases correctamente</h2>
-    <div class="puntuacion">Puntos: <span id="puntos">0</span></div>
-    <div class="puntuacion">Jugador: <span id="jugador">---</span></div>
-    
-    <div id="frases-container"></div>
-
     <div>
+        <label for="nombre">Tu Nombre:</label>
+        <input type="text" id="nombre" placeholder="Escribe tu nombre">
+        <button onclick="iniciarJuego()">Iniciar</button>
+    </div>
+    
+    <div class="puntuacion" style="display: none;">
+        Puntos: <span id="puntos">0</span>
+        <div id="motivacion" class="motivacion"></div>
+    </div>
+
+    <div id="frases-container" style="display: none;"></div>
+
+    <div style="display: none;">
         <button onclick="verificarTodas()">✅ Verificar todas</button>
         <button onclick="nuevaRonda()">🔄 Nueva Ronda</button>
     </div>
 
     <script>
         let frases = [];
+        let frasesMotivadoras = [];
         let frasesUsadas = new Set();
         let puntos = 0;
-        let jugador = null;
+        let jugador = "";
+
         const urlFrases = "frases.json"; 
         const urlMotivadoras = "frases_motivadoras.json";
 
-        function solicitarNombre() {
-            jugador = prompt("¿Cómo te llamas?");
+        function iniciarJuego() {
+            jugador = document.getElementById("nombre").value.trim();
             if (!jugador) jugador = "Jugador";
-            document.getElementById("jugador").textContent = jugador;
+            
+            document.getElementById("nombre").style.display = "none";
+            document.querySelector("button").style.display = "none";
+            document.querySelector(".puntuacion").style.display = "block";
+            document.getElementById("frases-container").style.display = "block";
+            document.querySelector("div[style='display: none;']").style.display = "block";
+
+            cargarFrasesMotivadoras();
+            cargarFrases();
+        }
+
+        async function cargarFrasesMotivadoras() {
+            try {
+                let response = await fetch(urlMotivadoras);
+                if (!response.ok) throw new Error(`Error al cargar JSON: ${response.status}`);
+
+                let data = await response.json();
+                if (!data.frases || data.frases.length === 0) {
+                    throw new Error("No se encontraron frases motivadoras.");
+                }
+
+                frasesMotivadoras = data.frases;
+                mostrarFraseMotivadora();
+            } catch (error) {
+                console.error("Error al cargar frases motivadoras:", error);
+            }
+        }
+
+        function mostrarFraseMotivadora() {
+            if (frasesMotivadoras.length > 0) {
+                let frase = frasesMotivadoras[Math.floor(Math.random() * frasesMotivadoras.length)];
+                document.getElementById("motivacion").textContent = `${jugador}, ${frase}`;
+            }
         }
 
         async function cargarFrases() {
@@ -173,50 +213,14 @@
 
                 let palabrasDesordenadas = [...frase.palabras].sort(() => Math.random() - 0.5);
                 let zonaPalabras = document.getElementById(`zona-palabras-${index}`);
-                let zonaDrop = document.getElementById(`zona-drop-${index}`);
-
-                palabrasDesordenadas.forEach((palabra) => {
-                    let palabraElem = crearPalabra(palabra);
-                    zonaPalabras.appendChild(palabraElem);
-                });
-
-                zonaDrop.addEventListener("dragover", (e) => e.preventDefault());
-
-                zonaDrop.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...zonaPalabras.children, ...zonaDrop.children].find(p => p.textContent === texto);
-                    
-                    if (palabraMovida) {
-                        palabraMovida.classList.add("palabra-en-drop");
-                        zonaDrop.appendChild(palabraMovida);
-                    }
-                });
+                palabrasDesordenadas.forEach(p => zonaPalabras.appendChild(crearPalabra(p)));
             });
-        }
-
-        function verificarTodas() {
-            frases.forEach((frase, index) => {
-                let zonaDrop = document.getElementById(`zona-drop-${index}`);
-                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
-
-                if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
-                    zonaDrop.classList.add("correcto");
-                    puntos++;
-                } else {
-                    zonaDrop.classList.add("incorrecto");
-                }
-            });
-
-            document.getElementById("puntos").textContent = puntos;
         }
 
         function nuevaRonda() {
+            mostrarFraseMotivadora();
             cargarFrases();
         }
-
-        solicitarNombre();
-        cargarFrases();
     </script>
 
 </body>
