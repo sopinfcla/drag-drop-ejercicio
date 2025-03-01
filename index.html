@@ -188,8 +188,8 @@
                 zonaDrop.addEventListener("drop", (e) => {
                     e.preventDefault();
                     let texto = e.dataTransfer.getData("text");
-                    let palabraMovida = [...document.querySelectorAll(".palabra")].find(p => p.textContent === texto);
-                    
+                    let palabraMovida = [...document.querySelectorAll(".palabra")].find(p => p.textContent.trim() === texto.trim());
+
                     if (palabraMovida) {
                         palabraMovida.classList.add("palabra-en-drop");
                         zonaDrop.appendChild(palabraMovida);
@@ -202,8 +202,8 @@
             let aciertos = 0;
             frases.forEach((frase, index) => {
                 let zonaDrop = document.getElementById(`zona-drop-${index}`);
-                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent);
-                
+                let palabrasEnZona = Array.from(zonaDrop.children).map(el => el.textContent.trim());
+
                 if (JSON.stringify(palabrasEnZona) === JSON.stringify(frase.orden_correcto)) {
                     zonaDrop.classList.add("correcto");
                     aciertos++;
